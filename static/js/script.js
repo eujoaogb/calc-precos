@@ -102,7 +102,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             atualizarResultados(data);
             adicionarAoHistorico(data);
-            document.querySelector('.card:has(#precoFinal)').scrollIntoView({ behavior: 'smooth' });
+            
+            // Corrigir o scroll para os resultados
+            setTimeout(() => {
+                const resultadosElement = document.getElementById('resultados');
+                if (resultadosElement) {
+                    const offset = resultadosElement.offsetTop - 20; // 20px de margem
+                    window.scrollTo({
+                        top: offset,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
         } catch (error) {
             console.error('Erro:', error);
             alert(error.message || 'Erro ao calcular os preços. Por favor, tente novamente.');
@@ -281,9 +292,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('precoFinalDesconto').textContent = formatarMoeda(precoFinal);
         document.getElementById('economiaTotal').textContent = formatarMoeda(valorDescontoReais);
 
-        // Mostrar resultados
+        // Mostrar resultados e corrigir scroll
         resultadosDesconto.classList.remove('d-none');
-        resultadosDesconto.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            const offset = resultadosDesconto.offsetTop - 20; // 20px de margem
+            window.scrollTo({
+                top: offset,
+                behavior: 'smooth'
+            });
+        }, 100);
     });
 
     // Atualizar a função recarregarCalculo para usar os IDs corretos
