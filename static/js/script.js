@@ -155,13 +155,30 @@ document.addEventListener('DOMContentLoaded', function() {
         atualizarDetalhesCalculo(data);
     }
 
+    // Taxas da InfinitePay
+    const TAXAS_INFINITE = {
+        pix: 0, // Grátis
+        credito_vista: 4.20,
+        parcelado: {
+            2: 6.09,
+            3: 7.01,
+            4: 7.91,
+            5: 8.80,
+            6: 9.67,
+            7: 12.59,
+            8: 13.42,
+            9: 14.25,
+            10: 15.06,
+            11: 15.87,
+            12: 16.66
+        }
+    };
+
     function atualizarDetalhesCalculo(data) {
         const custoTotal = data.preco_custo + data.custo_adicional;
         const lucro = data.preco_final - custoTotal;
         const descontoPix = data.preco_final - data.preco_pix;
         const lucroPix = data.preco_pix - custoTotal;
-        const lucroParcelado = data.preco_parcelado - custoTotal;
-        const taxaParceladoValor = data.preco_parcelado - data.preco_final;
         
         const detalhesHtml = `
             <div class="calculation-step">
@@ -174,10 +191,10 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             
             <div class="calculation-step">
-                <h6>Análise PIX:</h6>
+                <h6>Análise PIX (InfinitePay):</h6>
                 <p>Preço à Vista: ${formatarMoeda(data.preco_final)}</p>
-                <p>Desconto PIX (${formatarPorcentagem(data.porcentagem_pix)}): -${formatarMoeda(descontoPix)}</p>
-                <p class="fw-bold">Preço Final PIX: ${formatarMoeda(data.preco_pix)}</p>
+                <p class="text-success">Taxa PIX: GRÁTIS</p>
+                <p class="fw-bold">Preço Final PIX: ${formatarMoeda(data.preco_final)}</p>
                 <p class="text-${lucroPix >= 0 ? 'success' : 'danger'}">
                     ${lucroPix >= 0 ? 'Lucro' : 'Prejuízo'} no PIX: ${formatarMoeda(Math.abs(lucroPix))}
                     <small class="text-muted">(${formatarPorcentagem((lucroPix/custoTotal) * 100)} sobre o custo)</small>
@@ -185,48 +202,34 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             
             <div class="calculation-step">
-                <h6>Análise Parcelamento:</h6>
-                <p>Preço à Vista: ${formatarMoeda(data.preco_final)}</p>
-                <p>Taxa de Parcelamento (${formatarPorcentagem(data.taxa_parcelamento)}): +${formatarMoeda(taxaParceladoValor)}</p>
-                <p class="fw-bold">Preço Final Parcelado: ${formatarMoeda(data.preco_parcelado)}</p>
-                <p class="text-${lucroParcelado >= 0 ? 'success' : 'danger'}">
-                    ${lucroParcelado >= 0 ? 'Lucro' : 'Prejuízo'} no Parcelado: ${formatarMoeda(Math.abs(lucroParcelado))}
-                    <small class="text-muted">(${formatarPorcentagem((lucroParcelado/custoTotal) * 100)} sobre o custo)</small>
-                </p>
-                
-                <div class="alert alert-info mt-3">
-                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> Informações sobre o Parcelamento:</h6>
+                <h6>Análise Cartão de Crédito (InfinitePay):</h6>
+                <div class="alert alert-info">
+                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> Taxas da InfinitePay:</h6>
                     <p class="mb-2">
-                        <strong>Taxa da Maquininha:</strong> ${formatarPorcentagem(data.taxa_parcelamento)}
+                        <strong>Crédito à Vista:</strong> ${formatarPorcentagem(TAXAS_INFINITE.credito_vista)}
                         <br>
-                        <small class="text-muted">Esta é a taxa que a maquininha/operadora cobra por venda parcelada</small>
-                    </p>
-                    <p class="mb-2">
-                        <strong>Custo da Taxa:</strong> ${formatarMoeda(taxaParceladoValor)}
-                        <br>
-                        <small class="text-muted">Este é o valor que você paga para a operadora do cartão</small>
-                    </p>
-                    <p class="mb-0">
-                        <strong>Lucro Real por Parcela:</strong>
-                        <br>
-                        <small class="text-muted">Seu lucro real considerando a taxa do parcelamento:</small>
+                        <small class="text-muted">Você recebe: ${formatarMoeda(data.preco_final * (1 - TAXAS_INFINITE.credito_vista/100))}</small>
                     </p>
                 </div>
 
                 <div class="mt-3">
-                    <h6>Opções de Parcelamento:</h6>
+                    <h6>Simulação de Parcelamento:</h6>
                     <div class="row">
-                        ${Array.from({length: data.max_parcelas}, (_, i) => i + 1).map(parcela => {
-                            const valorParcela = data.preco_parcelado / parcela;
-                            const lucroRealPorParcela = (data.preco_parcelado - taxaParceladoValor - custoTotal) / parcela;
+                        ${Object.entries(TAXAS_INFINITE.parcelado).map(([parcelas, taxa]) => {
+                            const valorTotal = data.preco_final * (1 + taxa/100);
+                            const valorParcela = valorTotal / parseInt(parcelas);
+                            const valorRecebido = data.preco_final * (1 - taxa/100);
+                            const lucroReal = valorRecebido - custoTotal;
                             return `
                                 <div class="col-md-4 mb-2">
                                     <div class="card">
                                         <div class="card-body p-2">
-                                            <h6 class="mb-1">${parcela}x de ${formatarMoeda(valorParcela)}</h6>
-                                            <small class="text-muted d-block">Total: ${formatarMoeda(data.preco_parcelado)}</small>
-                                            <small class="text-${lucroRealPorParcela >= 0 ? 'success' : 'danger'}">
-                                                Lucro por parcela: ${formatarMoeda(lucroRealPorParcela)}
+                                            <h6 class="mb-1">${parcelas}x de ${formatarMoeda(valorParcela)}</h6>
+                                            <small class="text-muted d-block">Total cliente: ${formatarMoeda(valorTotal)}</small>
+                                            <small class="text-muted d-block">Taxa: ${formatarPorcentagem(taxa)}</small>
+                                            <small class="text-muted d-block">Você recebe: ${formatarMoeda(valorRecebido)}</small>
+                                            <small class="text-${lucroReal >= 0 ? 'success' : 'danger'}">
+                                                ${lucroReal >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(lucroReal))}
                                             </small>
                                         </div>
                                     </div>
