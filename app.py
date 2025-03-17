@@ -15,6 +15,8 @@ def calcular():
     porcentagem_lucro = float(data['porcentagem_lucro'])
     porcentagem_pix = float(data['porcentagem_pix'])
     custo_adicional = float(data['custo_adicional'])
+    max_parcelas = int(data['max_parcelas'])
+    taxa_parcelamento = float(data['taxa_parcelamento'])
     
     # Calcula o custo total
     custo_total = preco_custo + custo_adicional
@@ -23,12 +25,19 @@ def calcular():
     margem_lucro = custo_total * (porcentagem_lucro / 100)
     preco_final = custo_total + margem_lucro
     
+    # Calcula o lucro à vista
+    lucro_vista = preco_final - custo_total
+    
     # Calcula o preço com desconto PIX
     desconto_pix = preco_final * (porcentagem_pix / 100)
     preco_pix = preco_final - desconto_pix
     
-    # Calcula o preço parcelado (acréscimo de 15% para cobrir taxas)
-    preco_parcelado = preco_final * 1.15
+    # Calcula o lucro no PIX
+    lucro_pix = preco_pix - custo_total
+    
+    # Calcula o preço parcelado
+    taxa = taxa_parcelamento / 100
+    preco_parcelado = preco_final * (1 + taxa)
     
     return jsonify({
         'preco_custo': preco_custo,
@@ -36,8 +45,12 @@ def calcular():
         'porcentagem_lucro': porcentagem_lucro,
         'porcentagem_pix': porcentagem_pix,
         'preco_final': preco_final,
+        'lucro_vista': lucro_vista,
         'preco_pix': preco_pix,
-        'preco_parcelado': preco_parcelado
+        'lucro_pix': lucro_pix,
+        'preco_parcelado': preco_parcelado,
+        'max_parcelas': max_parcelas,
+        'taxa_parcelamento': taxa_parcelamento
     })
 
 if __name__ == '__main__':
