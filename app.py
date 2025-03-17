@@ -71,5 +71,55 @@ def calcular():
         logger.error(f"Erro ao calcular preços: {str(e)}")
         return jsonify({'error': 'Erro ao calcular os preços. Por favor, tente novamente.'}), 500
 
+@app.route('/calcular-desconto', methods=['POST'])
+def calcular_desconto():
+    try:
+        dados = request.get_json()
+        
+        # Extrair dados
+        preco_original = float(dados.get('preco_original', 0))
+        tipo_desconto = dados.get('tipo_desconto', 'porcentagem')
+        valor_desconto = float(dados.get('valor_desconto', 0))
+
+        # Log dos dados recebidos
+        logger.info(f"Dados recebidos para cálculo de desconto: {dados}")
+
+        # Validar dados
+        if preco_original < 0:
+            raise ValueError("O preço original não pode ser negativo")
+        if valor_desconto < 0:
+            raise ValueError("O valor do desconto não pode ser negativo")
+
+        # Cálculos
+        if tipo_desconto == 'porcentagem':
+            if valor_desconto > 100:
+                raise ValueError("A porcentagem de desconto não pode ser maior que 100%")
+            valor_desconto_reais = (preco_original * valor_desconto) / 100
+            porcentagem_desconto = valor_desconto
+        else:
+            if valor_desconto > preco_original:
+                raise ValueError("O valor do desconto não pode ser maior que o preço original")
+            valor_desconto_reais = valor_desconto
+            porcentagem_desconto = (valor_desconto / preco_original) * 100
+
+        preco_final = preco_original - valor_desconto_reais
+
+        # Log dos resultados
+        logger.info(f"Resultados do desconto: valor={valor_desconto_reais}, porcentagem={porcentagem_desconto}, final={preco_final}")
+
+        return jsonify({
+            'preco_original': preco_original,
+            'valor_desconto': valor_desconto_reais,
+            'porcentagem_desconto': porcentagem_desconto,
+            'preco_final': preco_final
+        })
+
+    except ValueError as e:
+        logger.error(f"Erro de validação no cálculo de desconto: {str(e)}")
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        logger.error(f"Erro ao calcular desconto: {str(e)}")
+        return jsonify({'error': 'Erro ao calcular o desconto. Por favor, tente novamente.'}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True) 

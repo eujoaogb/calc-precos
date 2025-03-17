@@ -224,6 +224,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Carrega o histórico ao iniciar
     atualizarHistorico();
+
+    // Calculadora de Descontos
+    const calculadoraDescontoForm = document.getElementById('calculadoraDescontoForm');
+    const resultadosDesconto = document.getElementById('resultadosDesconto');
+    const precoOriginalInput = document.getElementById('precoOriginal');
+    const tipoDescontoSelect = document.getElementById('tipoDesconto');
+    const valorDescontoInput = document.getElementById('valorDesconto');
+
+    // Aplicar máscara de moeda ao preço original
+    aplicarMascaraMoeda(precoOriginalInput);
+
+    // Atualizar placeholder do valor do desconto baseado no tipo selecionado
+    tipoDescontoSelect.addEventListener('change', function() {
+        const tipo = this.value;
+        valorDescontoInput.placeholder = tipo === 'porcentagem' ? 'Digite a porcentagem' : 'Digite o valor em R$';
+        valorDescontoInput.value = '';
+    });
+
+    calculadoraDescontoForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const precoOriginal = parseFloat(precoOriginalInput.value.replace('R$', '').replace('.', '').replace(',', '.'));
+        const tipoDesconto = tipoDescontoSelect.value;
+        const valorDesconto = parseFloat(valorDescontoInput.value);
+
+        if (isNaN(precoOriginal) || isNaN(valorDesconto)) {
+            alert('Por favor, preencha todos os campos corretamente.');
+            return;
+        }
+
+        let valorDescontoReais;
+        let porcentagemDesconto;
+
+        if (tipoDesconto === 'porcentagem') {
+            if (valorDesconto < 0 || valorDesconto > 100) {
+                alert('A porcentagem de desconto deve estar entre 0 e 100.');
+                return;
+            }
+            valorDescontoReais = (precoOriginal * valorDesconto) / 100;
+            porcentagemDesconto = valorDesconto;
+        } else {
+            if (valorDesconto > precoOriginal) {
+                alert('O valor do desconto não pode ser maior que o preço original.');
+                return;
+            }
+            valorDescontoReais = valorDesconto;
+            porcentagemDesconto = (valorDesconto / precoOriginal) * 100;
+        }
+
+        const precoFinal = precoOriginal - valorDescontoReais;
+
+        // Atualizar resultados
+        document.getElementById('precoOriginalResultado').textContent = formatarMoeda(precoOriginal);
+        document.getElementById('valorDescontoResultado').textContent = formatarMoeda(valorDescontoReais);
+        document.getElementById('porcentagemDescontoResultado').textContent = `${porcentagemDesconto.toFixed(1)}%`;
+        document.getElementById('precoFinalDesconto').textContent = formatarMoeda(precoFinal);
+        document.getElementById('economiaTotal').textContent = formatarMoeda(valorDescontoReais);
+
+        // Mostrar resultados
+        resultadosDesconto.classList.remove('d-none');
+        resultadosDesconto.scrollIntoView({ behavior: 'smooth' });
+    });
 });
 
 // Função global para recarregar cálculo do histórico
