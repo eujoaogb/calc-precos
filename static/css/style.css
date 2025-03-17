@@ -1,10 +1,12 @@
 body {
     background-color: #f8f9fa;
+    padding: 20px;
 }
 
 .card {
     border-radius: 15px;
-    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
     transition: transform 0.2s;
 }
 
@@ -12,103 +14,107 @@ body {
     transform: translateY(-5px);
 }
 
-.card-header {
-    border-top-left-radius: 15px !important;
-    border-top-right-radius: 15px !important;
+.card-title {
+    color: #2c3e50;
+    font-weight: 600;
 }
 
-.price-box {
-    background-color: white;
+.form-control {
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-
-.price-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s;
 }
 
 .form-control:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15);
+    border-color: #007bff;
+    box-shadow: none;
 }
 
 .btn-primary {
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-weight: 600;
     transition: all 0.3s;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(13,110,253,0.3);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
-.table {
-    margin-bottom: 0;
+#resultados {
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
 }
 
-.table th, .table td {
-    padding: 1rem;
-    vertical-align: middle;
-}
-
-/* Detalhes do Cálculo */
-#detalhes-calculo {
-    transition: opacity 0.2s ease-in-out;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .calculation-step {
     background-color: #f8f9fa;
-    border-radius: 10px;
     padding: 15px;
-    margin-bottom: 15px;
+    border-radius: 10px;
+    margin: 10px 0;
 }
 
 .calculation-step p {
-    margin-bottom: 8px;
+    margin: 8px 0;
     font-size: 0.95rem;
 }
 
-.calculation-step p:last-child {
-    margin-bottom: 0;
+#detalhes-calculo {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
 }
 
-.calculation-step .fw-bold {
-    color: #0d6efd;
-    font-size: 1.1rem;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #dee2e6;
+#detalhes-calculo h6 {
+    color: #2c3e50;
+    margin-top: 15px;
+    font-weight: 600;
 }
 
-/* Animações */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+#detalhes-calculo p {
+    margin: 8px 0;
+    color: #495057;
 }
 
-#resultados:not(.d-none) {
-    animation: fadeIn 0.5s ease-out;
+.text-success {
+    color: #28a745 !important;
 }
 
-/* Responsividade */
-@media (max-width: 576px) {
-    .container {
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+@media (max-width: 768px) {
+    body {
         padding: 10px;
     }
     
-    .card-body {
+    .form-control {
+        padding: 10px;
+    }
+    
+    .btn-primary {
+        padding: 10px 20px;
+    }
+    
+    #detalhes-calculo {
         padding: 15px;
-    }
-    
-    .price-box {
-        margin-bottom: 15px;
-    }
-    
-    .calculation-step {
-        padding: 10px;
-    }
-    
-    .calculation-step p {
-        font-size: 0.9rem;
     }
 } 

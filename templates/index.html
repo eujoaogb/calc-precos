@@ -18,17 +18,31 @@
                         <h2 class="mb-0">Calculadora de Preços</h2>
                     </div>
                     <div class="card-body">
-                        <form id="calculadora-form" class="mb-4">
-                            <div class="mb-3">
-                                <label for="preco_custo" class="form-label">Preço de Custo (R$)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">R$</span>
-                                    <input type="number" class="form-control form-control-lg" id="preco_custo" 
-                                           step="0.01" min="0" placeholder="0,00" required>
-                                </div>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Configurações de Cálculo</h5>
+                                <form id="calculadoraForm">
+                                    <div class="mb-3">
+                                        <label for="precoCusto" class="form-label">Preço de Custo (R$)</label>
+                                        <input type="text" class="form-control" id="precoCusto" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="porcentagemLucro" class="form-label">Porcentagem de Lucro (%)</label>
+                                        <input type="number" class="form-control" id="porcentagemLucro" value="30" min="0" max="1000" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="porcentagemPix" class="form-label">Desconto PIX (%)</label>
+                                        <input type="number" class="form-control" id="porcentagemPix" value="10" min="0" max="100" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="custoAdicional" class="form-label">Custo Adicional (R$)</label>
+                                        <input type="text" class="form-control" id="custoAdicional" value="0">
+                                        <small class="text-muted">Ex: frete, embalagem, etc.</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Calcular</button>
+                                </form>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-lg w-100">Calcular</button>
-                        </form>
+                        </div>
 
                         <div id="resultados" class="d-none">
                             <div class="row g-3">
