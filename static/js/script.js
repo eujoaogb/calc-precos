@@ -286,13 +286,19 @@ function atualizarDetalhesCalculo(precoCusto, custoAdicional, margemLucro, desco
 function atualizarResultados(event) {
     event.preventDefault();
 
-    // Obter valores do formulário
+    // Obter valores do formulário e converter para números
     const precoCusto = parseFloat(document.getElementById('precoCusto').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
     const custoAdicional = parseFloat(document.getElementById('custoAdicional').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
     const margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
     const descontoPix = parseFloat(document.getElementById('descontoPix').value) || 0;
     const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value) || 0;
     const numParcelas = parseInt(document.getElementById('numParcelas').value) || 1;
+
+    // Validar valores
+    if (precoCusto < 0 || margemLucro < 0 || descontoPix < 0 || taxaParcelamento < 0) {
+        alert('Os valores não podem ser negativos');
+        return;
+    }
 
     // Fazer a requisição para calcular os preços
     fetch('/calcular', {
@@ -311,6 +317,10 @@ function atualizarResultados(event) {
     })
     .then(response => response.json())
     .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
         // Atualizar os resultados
         document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
         document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
@@ -335,6 +345,14 @@ function atualizarResultados(event) {
     })
     .catch(error => {
         console.error('Erro:', error);
-        alert('Erro ao calcular os preços. Por favor, tente novamente.');
+        alert(error.message || 'Erro ao calcular os preços. Por favor, tente novamente.');
     });
+}
+
+// Função para formatar valores em moeda brasileira
+function formatarMoeda(valor) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(valor);
 } 
