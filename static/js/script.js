@@ -72,13 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Obter valores dos campos com os IDs corretos
+        // Obter valores dos campos
         const precoCusto = parseFloat(precoCustoInput.value.replace('R$', '').replace('.', '').replace(',', '.'));
-        const porcentagemLucro = parseFloat(document.getElementById('porcentagemLucro').value);
-        const porcentagemPix = parseFloat(document.getElementById('porcentagemPix').value);
         const custoAdicional = parseFloat(custoAdicionalInput.value.replace('R$', '').replace('.', '').replace(',', '.')) || 0;
-        const maxParcelas = parseInt(document.getElementById('maxParcelas').value);
-        const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value);
+        const porcentagemLucro = parseFloat(document.getElementById('porcentagemLucro').value);
 
         try {
             const response = await fetch('/calcular', {
@@ -89,10 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     preco_custo: precoCusto,
                     custo_adicional: custoAdicional,
-                    porcentagem_lucro: porcentagemLucro,
-                    porcentagem_pix: porcentagemPix,
-                    taxa_parcelamento: taxaParcelamento,
-                    max_parcelas: maxParcelas
+                    porcentagem_lucro: porcentagemLucro
                 })
             });
 
@@ -100,20 +94,58 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.error) {
                 throw new Error(data.error);
             }
-            atualizarResultados(data);
+
+            // Mostrar a seção de resultados
+            resultados.classList.remove('d-none');
+
+            // Atualizar os resultados básicos
+            document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
+            document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
+
+            // Atualizar opções de parcelamento
+            const opcoesParcelamento = document.getElementById('opcoesParcelamento');
+            opcoesParcelamento.innerHTML = '';
+
+            // Adicionar opção à vista no crédito
+            const divVista = document.createElement('div');
+            divVista.className = 'mb-2';
+            divVista.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>À vista no crédito</span>
+                    <span>${formatarMoeda(data.preco_credito)}</span>
+                </div>
+                <small class="text-muted">Taxa: ${data.taxa_credito}% - Você recebe: ${formatarMoeda(data.preco_credito * (1 - data.taxa_credito/100))}</small>
+            `;
+            opcoesParcelamento.appendChild(divVista);
+
+            // Adicionar opções de parcelamento
+            Object.entries(data.opcoes_parcelamento).forEach(([parcelas, info]) => {
+                const div = document.createElement('div');
+                div.className = 'mb-2';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${parcelas}x de ${formatarMoeda(info.valor_parcela)}</span>
+                        <span>${formatarMoeda(info.valor_total)}</span>
+                    </div>
+                    <small class="text-muted">Taxa: ${info.taxa}% - Você recebe: ${formatarMoeda(info.valor_recebido)}</small>
+                    <small class="text-${info.lucro >= 0 ? 'success' : 'danger'} d-block">
+                        ${info.lucro >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(info.lucro))}
+                    </small>
+                `;
+                opcoesParcelamento.appendChild(div);
+            });
+
+            // Atualizar detalhes do cálculo
+            atualizarDetalhesCalculo(data);
+
+            // Adicionar ao histórico
             adicionarAoHistorico(data);
-            
-            // Corrigir o scroll para os resultados
+
+            // Scroll suave até os resultados
             setTimeout(() => {
-                const resultadosElement = document.getElementById('resultados');
-                if (resultadosElement) {
-                    const offset = resultadosElement.offsetTop - 20; // 20px de margem
-                    window.scrollTo({
-                        top: offset,
-                        behavior: 'smooth'
-                    });
-                }
+                resultados.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
+
         } catch (error) {
             console.error('Erro:', error);
             alert(error.message || 'Erro ao calcular os preços. Por favor, tente novamente.');
@@ -121,122 +153,45 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function formatarMoeda(valor) {
-        return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(valor);
     }
 
     function formatarPorcentagem(valor) {
         return `${valor.toFixed(1)}%`;
     }
 
-    function atualizarResultados(data) {
-        document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
-        document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
-        document.getElementById('precoParcelado').textContent = formatarMoeda(data.preco_parcelado);
-        document.getElementById('lucroVista').textContent = formatarMoeda(data.lucro_vista);
-        document.getElementById('lucroPix').textContent = formatarMoeda(data.lucro_pix);
-        
-        // Atualiza as opções de parcelamento
-        const opcoesParcelamento = document.getElementById('opcoesParcelamento');
-        opcoesParcelamento.innerHTML = '';
-        
-        for (let i = 1; i <= data.max_parcelas; i++) {
-            const valorParcela = data.preco_parcelado / i;
-            const div = document.createElement('div');
-            div.className = 'mb-2';
-            div.innerHTML = `
-                <small class="text-muted">
-                    ${i}x de ${formatarMoeda(valorParcela)}
-                    ${i === 1 ? ' (à vista)' : ' sem juros'}
-                </small>
-            `;
-            opcoesParcelamento.appendChild(div);
-        }
-        
-        atualizarDetalhesCalculo(data);
-    }
-
-    // Taxas da InfinitePay
-    const TAXAS_INFINITE = {
-        pix: 0, // Grátis
-        credito_vista: 4.20,
-        parcelado: {
-            2: 6.09,
-            3: 7.01,
-            4: 7.91,
-            5: 8.80,
-            6: 9.67,
-            7: 12.59,
-            8: 13.42,
-            9: 14.25,
-            10: 15.06,
-            11: 15.87,
-            12: 16.66
-        }
-    };
-
     function atualizarDetalhesCalculo(data) {
-        const custoTotal = data.preco_custo + data.custo_adicional;
-        const lucro = data.preco_final - custoTotal;
-        const descontoPix = data.preco_final - data.preco_pix;
-        const lucroPix = data.preco_pix - custoTotal;
-        
         const detalhesHtml = `
-            <div class="calculation-step">
-                <h6>Composição do Preço:</h6>
-                <p>Custo Base: ${formatarMoeda(data.preco_custo)}</p>
-                <p>Custo Adicional: ${formatarMoeda(data.custo_adicional)}</p>
-                <p>Custo Total: ${formatarMoeda(custoTotal)}</p>
-                <p>Margem de Lucro (${formatarPorcentagem(data.porcentagem_lucro)}): ${formatarMoeda(lucro)}</p>
-                <p class="fw-bold">Preço Final: ${formatarMoeda(data.preco_final)}</p>
-            </div>
-            
-            <div class="calculation-step">
-                <h6>Análise PIX (InfinitePay):</h6>
-                <p>Preço à Vista: ${formatarMoeda(data.preco_final)}</p>
-                <p class="text-success">Taxa PIX: GRÁTIS</p>
-                <p class="fw-bold">Preço Final PIX: ${formatarMoeda(data.preco_final)}</p>
-                <p class="text-${lucroPix >= 0 ? 'success' : 'danger'}">
-                    ${lucroPix >= 0 ? 'Lucro' : 'Prejuízo'} no PIX: ${formatarMoeda(Math.abs(lucroPix))}
-                    <small class="text-muted">(${formatarPorcentagem((lucroPix/custoTotal) * 100)} sobre o custo)</small>
-                </p>
-            </div>
-            
-            <div class="calculation-step">
-                <h6>Análise Cartão de Crédito (InfinitePay):</h6>
-                <div class="alert alert-info">
-                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> Taxas da InfinitePay:</h6>
-                    <p class="mb-2">
-                        <strong>Crédito à Vista:</strong> ${formatarPorcentagem(TAXAS_INFINITE.credito_vista)}
-                        <br>
-                        <small class="text-muted">Você recebe: ${formatarMoeda(data.preco_final * (1 - TAXAS_INFINITE.credito_vista/100))}</small>
+            <div class="card-body">
+                <div class="calculation-step">
+                    <h6>Composição do Preço:</h6>
+                    <p>Custo Base: ${formatarMoeda(data.preco_custo)}</p>
+                    <p>Custo Adicional: ${formatarMoeda(data.custo_adicional)}</p>
+                    <p>Custo Total: ${formatarMoeda(data.preco_custo + data.custo_adicional)}</p>
+                    <p>Margem de Lucro (${formatarPorcentagem(data.porcentagem_lucro)}): 
+                       ${formatarMoeda(data.lucro_vista)}</p>
+                    <p class="fw-bold">Preço Final: ${formatarMoeda(data.preco_final)}</p>
+                </div>
+                
+                <div class="calculation-step mt-3">
+                    <h6>Análise PIX:</h6>
+                    <p>Taxa PIX: GRÁTIS</p>
+                    <p>Você recebe: ${formatarMoeda(data.preco_pix)}</p>
+                    <p class="text-${data.lucro_pix >= 0 ? 'success' : 'danger'}">
+                        ${data.lucro_pix >= 0 ? 'Lucro' : 'Prejuízo'} no PIX: ${formatarMoeda(Math.abs(data.lucro_pix))}
                     </p>
                 </div>
 
-                <div class="mt-3">
-                    <h6>Simulação de Parcelamento:</h6>
-                    <div class="row">
-                        ${Object.entries(TAXAS_INFINITE.parcelado).map(([parcelas, taxa]) => {
-                            const valorTotal = data.preco_final * (1 + taxa/100);
-                            const valorParcela = valorTotal / parseInt(parcelas);
-                            const valorRecebido = data.preco_final * (1 - taxa/100);
-                            const lucroReal = valorRecebido - custoTotal;
-                            return `
-                                <div class="col-md-4 mb-2">
-                                    <div class="card">
-                                        <div class="card-body p-2">
-                                            <h6 class="mb-1">${parcelas}x de ${formatarMoeda(valorParcela)}</h6>
-                                            <small class="text-muted d-block">Total cliente: ${formatarMoeda(valorTotal)}</small>
-                                            <small class="text-muted d-block">Taxa: ${formatarPorcentagem(taxa)}</small>
-                                            <small class="text-muted d-block">Você recebe: ${formatarMoeda(valorRecebido)}</small>
-                                            <small class="text-${lucroReal >= 0 ? 'success' : 'danger'}">
-                                                ${lucroReal >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(lucroReal))}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
+                <div class="calculation-step mt-3">
+                    <h6>Análise Cartão de Crédito:</h6>
+                    <p>Taxa Crédito à Vista: ${formatarPorcentagem(data.taxa_credito)}</p>
+                    <p>Você recebe: ${formatarMoeda(data.preco_credito * (1 - data.taxa_credito/100))}</p>
+                    <p class="text-${data.lucro_credito >= 0 ? 'success' : 'danger'}">
+                        ${data.lucro_credito >= 0 ? 'Lucro' : 'Prejuízo'} no Crédito: ${formatarMoeda(Math.abs(data.lucro_credito))}
+                    </p>
                 </div>
             </div>
         `;
@@ -288,208 +243,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Carrega o histórico ao iniciar
-    atualizarHistorico();
-
-    // Calculadora de Descontos
-    const calculadoraDescontoForm = document.getElementById('calculadoraDescontoForm');
-    const resultadosDesconto = document.getElementById('resultadosDesconto');
-    const precoOriginalInput = document.getElementById('precoOriginal');
-    const tipoDescontoSelect = document.getElementById('tipoDesconto');
-    const valorDescontoInput = document.getElementById('valorDesconto');
-
-    // Aplicar máscara de moeda ao preço original
-    aplicarMascaraMoeda(precoOriginalInput);
-
-    // Atualizar placeholder do valor do desconto baseado no tipo selecionado
-    tipoDescontoSelect.addEventListener('change', function() {
-        const tipo = this.value;
-        valorDescontoInput.placeholder = tipo === 'porcentagem' ? 'Digite a porcentagem' : 'Digite o valor em R$';
-        valorDescontoInput.value = '';
-    });
-
-    calculadoraDescontoForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const precoOriginal = parseFloat(precoOriginalInput.value.replace('R$', '').replace('.', '').replace(',', '.'));
-        const tipoDesconto = tipoDescontoSelect.value;
-        const valorDesconto = parseFloat(valorDescontoInput.value);
-
-        if (isNaN(precoOriginal) || isNaN(valorDesconto)) {
-            alert('Por favor, preencha todos os campos corretamente.');
-            return;
-        }
-
-        let valorDescontoReais;
-        let porcentagemDesconto;
-
-        if (tipoDesconto === 'porcentagem') {
-            if (valorDesconto < 0 || valorDesconto > 100) {
-                alert('A porcentagem de desconto deve estar entre 0 e 100.');
-                return;
-            }
-            valorDescontoReais = (precoOriginal * valorDesconto) / 100;
-            porcentagemDesconto = valorDesconto;
-        } else {
-            if (valorDesconto > precoOriginal) {
-                alert('O valor do desconto não pode ser maior que o preço original.');
-                return;
-            }
-            valorDescontoReais = valorDesconto;
-            porcentagemDesconto = (valorDesconto / precoOriginal) * 100;
-        }
-
-        const precoFinal = precoOriginal - valorDescontoReais;
-
-        // Atualizar resultados
-        document.getElementById('precoOriginalResultado').textContent = formatarMoeda(precoOriginal);
-        document.getElementById('valorDescontoResultado').textContent = formatarMoeda(valorDescontoReais);
-        document.getElementById('porcentagemDescontoResultado').textContent = `${porcentagemDesconto.toFixed(1)}%`;
-        document.getElementById('precoFinalDesconto').textContent = formatarMoeda(precoFinal);
-        document.getElementById('economiaTotal').textContent = formatarMoeda(valorDescontoReais);
-
-        // Mostrar resultados e corrigir scroll
-        resultadosDesconto.classList.remove('d-none');
-        setTimeout(() => {
-            const offset = resultadosDesconto.offsetTop - 20; // 20px de margem
-            window.scrollTo({
-                top: offset,
-                behavior: 'smooth'
-            });
-        }, 100);
-    });
-
-    // Atualizar a função recarregarCalculo para usar os IDs corretos
+    // Recarregar cálculo do histórico
     window.recarregarCalculo = function(index) {
-        const historicoCalculos = JSON.parse(localStorage.getItem('historicoCalculos')) || [];
         const registro = historicoCalculos[index];
-        
         if (registro) {
-            document.getElementById('precoCusto').value = formatarMoeda(registro.valores.preco_custo);
-            document.getElementById('custoAdicional').value = formatarMoeda(registro.valores.custo_adicional);
+            precoCustoInput.value = formatarMoeda(registro.valores.preco_custo);
+            custoAdicionalInput.value = formatarMoeda(registro.valores.custo_adicional);
             document.getElementById('porcentagemLucro').value = registro.valores.porcentagem_lucro;
-            document.getElementById('porcentagemPix').value = registro.valores.porcentagem_pix;
-            document.getElementById('maxParcelas').value = registro.valores.max_parcelas;
-            document.getElementById('taxaParcelamento').value = registro.valores.taxa_parcelamento;
-            
-            document.getElementById('calculadoraForm').dispatchEvent(new Event('submit'));
+            form.dispatchEvent(new Event('submit'));
         }
     };
-});
 
-function atualizarDetalhesCalculo(precoCusto, custoAdicional, margemLucro, descontoPix, taxaParcelamento, numParcelas) {
-    const custoTotal = precoCusto + custoAdicional;
-    const margemValor = custoTotal * (margemLucro / 100);
-    const precoFinal = custoTotal + margemValor;
-    const precoPix = precoFinal * (1 - descontoPix / 100);
-    const precoParcelado = precoFinal * (1 + taxaParcelamento / 100);
-
-    // Detalhes do Preço Final
-    document.getElementById('detalhesPrecoFinal').innerHTML = `
-        <strong>Exemplo do cálculo:</strong><br>
-        Custo do Produto: ${formatarMoeda(precoCusto)}<br>
-        Custos Adicionais: ${formatarMoeda(custoAdicional)}<br>
-        Custo Total: ${formatarMoeda(custoTotal)}<br>
-        Margem de Lucro (${margemLucro}%): ${formatarMoeda(margemValor)}<br>
-        <strong>Preço Final: ${formatarMoeda(precoFinal)}</strong>
-    `;
-
-    // Detalhes do PIX
-    const economiaPixReais = precoFinal - precoPix;
-    document.getElementById('detalhesPix').innerHTML = `
-        <strong>Exemplo do desconto:</strong><br>
-        Preço à Vista: ${formatarMoeda(precoFinal)}<br>
-        Desconto PIX: ${descontoPix}%<br>
-        Economia para o cliente: ${formatarMoeda(economiaPixReais)}<br>
-        <strong>Preço no PIX: ${formatarMoeda(precoPix)}</strong>
-    `;
-
-    // Detalhes do Parcelamento
-    const valorParcela = precoParcelado / numParcelas;
-    const acrescimoReais = precoParcelado - precoFinal;
-    document.getElementById('detalhesParcelamento').innerHTML = `
-        <strong>Exemplo do parcelamento:</strong><br>
-        Preço à Vista: ${formatarMoeda(precoFinal)}<br>
-        Taxa de Parcelamento: ${taxaParcelamento}%<br>
-        Acréscimo: ${formatarMoeda(acrescimoReais)}<br>
-        <strong>Preço Parcelado: ${formatarMoeda(precoParcelado)}</strong><br>
-        ${numParcelas}x de ${formatarMoeda(valorParcela)}
-    `;
-
-    // Mostrar a seção de detalhes
-    document.getElementById('detalhes-calculo').style.display = 'block';
-}
-
-function atualizarResultados(event) {
-    event.preventDefault();
-
-    // Obter valores do formulário e converter para números
-    const precoCusto = parseFloat(document.getElementById('precoCusto').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    const custoAdicional = parseFloat(document.getElementById('custoAdicional').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    const margemLucro = parseFloat(document.getElementById('porcentagemLucro').value) || 0;
-    const descontoPix = parseFloat(document.getElementById('porcentagemPix').value) || 0;
-    const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value) || 0;
-    const numParcelas = parseInt(document.getElementById('maxParcelas').value) || 1;
-
-    // Validar valores
-    if (precoCusto < 0 || margemLucro < 0 || descontoPix < 0 || taxaParcelamento < 0) {
-        alert('Os valores não podem ser negativos');
-        return;
-    }
-
-    // Fazer a requisição para calcular os preços
-    fetch('/calcular', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            preco_custo: precoCusto,
-            custo_adicional: custoAdicional,
-            porcentagem_lucro: margemLucro,
-            porcentagem_pix: descontoPix,
-            taxa_parcelamento: taxaParcelamento,
-            max_parcelas: numParcelas
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        // Atualizar os resultados
-        document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
-        document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
-        document.getElementById('precoParcelado').textContent = formatarMoeda(data.preco_parcelado);
-
-        // Mostrar a seção de resultados
-        document.getElementById('resultados').classList.remove('d-none');
-
-        // Atualizar os detalhes do cálculo
-        atualizarDetalhesCalculo(precoCusto, custoAdicional, margemLucro, descontoPix, taxaParcelamento, numParcelas);
-
-        // Salvar no histórico
-        salvarCalculo({
-            precoCusto,
-            custoAdicional,
-            margemLucro,
-            descontoPix,
-            taxaParcelamento,
-            numParcelas,
-            resultados: data
-        });
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert(error.message || 'Erro ao calcular os preços. Por favor, tente novamente.');
-    });
-}
-
-// Função para formatar valores em moeda brasileira
-function formatarMoeda(valor) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(valor);
-} 
+    // Inicializar histórico
+    atualizarHistorico();
+}); 

@@ -68,7 +68,7 @@ def calcular():
         # Cálculos para cada opção de parcelamento
         opcoes_parcelamento = {}
         for parcelas, taxa in TAXAS_INFINITE['parcelado'].items():
-            valor_total = preco_final * (1 + taxa/100)
+            valor_total = preco_final
             valor_parcela = valor_total / parcelas
             valor_recebido = preco_final * (1 - taxa/100)
             lucro = valor_recebido - custo_total

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Preços e Descontos</title>
+    <title>Calculadora de Preços - InfinitePay</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
@@ -15,170 +15,93 @@
                 <div class="card shadow-lg">
                     <div class="card-header bg-primary text-white">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h3 class="mb-0">Calculadoras</h3>
+                            <h3 class="mb-0">Calculadora de Preços</h3>
                             <button id="toggleTheme" class="btn btn-outline-light">
                                 <i class="bi bi-moon-fill"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Abas para alternar entre calculadoras -->
-                        <ul class="nav nav-tabs mb-4" id="calculadorasTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="preco-tab" data-bs-toggle="tab" data-bs-target="#preco" type="button" role="tab" aria-controls="preco" aria-selected="true">
-                                    <i class="bi bi-calculator me-2"></i>Calculadora de Preços
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="desconto-tab" data-bs-toggle="tab" data-bs-target="#desconto" type="button" role="tab" aria-controls="desconto" aria-selected="false">
-                                    <i class="bi bi-percent me-2"></i>Calculadora de Descontos
-                                </button>
-                            </li>
-                        </ul>
-
-                        <!-- Conteúdo das abas -->
-                        <div class="tab-content" id="calculadorasContent">
-                            <!-- Aba da Calculadora de Preços -->
-                            <div class="tab-pane fade show active" id="preco" role="tabpanel" aria-labelledby="preco-tab">
-                                <form id="calculadoraForm">
-                                    <!-- Preços e Custos -->
-                                    <div class="card mb-4">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <i class="bi bi-currency-dollar"></i>
-                                                Preços e Custos
-                                            </h5>
-                                            <div class="mb-3">
-                                                <label for="precoCusto" class="form-label">Preço de Custo (R$)</label>
-                                                <input type="text" class="form-control" id="precoCusto" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="custoAdicional" class="form-label">Custos Adicionais (R$)</label>
-                                                <input type="text" class="form-control" id="custoAdicional" value="R$ 0,00">
-                                                <small class="text-muted">Embalagem, frete, etc.</small>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="porcentagemLucro" class="form-label">Margem de Lucro (%)</label>
-                                                <input type="number" class="form-control" id="porcentagemLucro" value="30" min="0" step="0.1" required>
-                                            </div>
-                                        </div>
+                        <form id="calculadoraForm">
+                            <!-- Preços e Custos -->
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-currency-dollar"></i>
+                                        Preços e Custos
+                                    </h5>
+                                    <div class="mb-3">
+                                        <label for="precoCusto" class="form-label">Preço de Custo (R$)</label>
+                                        <input type="text" class="form-control" id="precoCusto" required>
                                     </div>
-
-                                    <!-- Botão de Calcular -->
-                                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
-                                        <i class="bi bi-calculator"></i>
-                                        Calcular Preços
-                                    </button>
-                                </form>
-
-                                <!-- Resultados -->
-                                <div class="card mb-4 d-none" id="resultados">
-                                    <div class="card-body">
-                                        <h5 class="card-title">
-                                            <i class="bi bi-check-circle"></i>
-                                            Resultados
-                                        </h5>
-                                        <div class="result-box mb-3">
-                                            <h6>Preço à Vista</h6>
-                                            <h3 id="precoFinal" class="mb-0">R$ 0,00</h3>
-                                        </div>
-                                        <div class="result-box mb-3">
-                                            <h6>Preço no PIX</h6>
-                                            <h3 id="precoPix" class="mb-0">R$ 0,00</h3>
-                                            <small class="text-success">Taxa: GRÁTIS</small>
-                                        </div>
-                                        <div class="result-box">
-                                            <h6>Opções de Parcelamento</h6>
-                                            <div id="opcoesParcelamento">
-                                                <!-- Será preenchido via JavaScript -->
-                                            </div>
-                                        </div>
+                                    <div class="mb-3">
+                                        <label for="custoAdicional" class="form-label">Custos Adicionais (R$)</label>
+                                        <input type="text" class="form-control" id="custoAdicional" value="R$ 0,00">
+                                        <small class="text-muted">Embalagem, frete, etc.</small>
                                     </div>
-                                </div>
-
-                                <!-- Detalhes do Cálculo -->
-                                <div class="card mb-4">
-                                    <div class="card-header bg-light">
-                                        <button class="btn btn-link text-decoration-none p-0" id="toggleDetalhes">
-                                            <i class="bi bi-chevron-down"></i>
-                                            Ver Detalhes do Cálculo
-                                        </button>
-                                    </div>
-                                    <div class="collapse" id="detalhes-calculo">
-                                        <!-- Será preenchido via JavaScript -->
-                                    </div>
-                                </div>
-
-                                <!-- Histórico -->
-                                <div class="card">
-                                    <div class="card-header bg-light">
-                                        <h5 class="card-title mb-0">
-                                            <i class="bi bi-clock-history"></i>
-                                            Histórico
-                                        </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="historico-calculos">
-                                            <!-- Será preenchido via JavaScript -->
-                                        </div>
+                                    <div class="mb-3">
+                                        <label for="porcentagemLucro" class="form-label">Margem de Lucro (%)</label>
+                                        <input type="number" class="form-control" id="porcentagemLucro" value="30" min="0" step="0.1" required>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Aba da Calculadora de Descontos -->
-                            <div class="tab-pane fade" id="desconto" role="tabpanel" aria-labelledby="desconto-tab">
-                                <form id="calculadoraDescontoForm">
-                                    <div class="card mb-4">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <i class="bi bi-tag"></i>
-                                                Calcular Desconto
-                                            </h5>
-                                            <div class="mb-3">
-                                                <label for="precoOriginal" class="form-label">Preço Original (R$)</label>
-                                                <input type="text" class="form-control" id="precoOriginal" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="tipoDesconto" class="form-label">Tipo de Desconto</label>
-                                                <select class="form-select" id="tipoDesconto">
-                                                    <option value="porcentagem">Porcentagem (%)</option>
-                                                    <option value="valor">Valor (R$)</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="valorDesconto" class="form-label">Valor do Desconto</label>
-                                                <input type="number" class="form-control" id="valorDesconto" required>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary btn-lg w-100">
-                                                <i class="bi bi-percent"></i>
-                                                Calcular Desconto
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
+                            <!-- Botão de Calcular -->
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mb-4">
+                                <i class="bi bi-calculator"></i>
+                                Calcular Preços
+                            </button>
+                        </form>
 
-                                <!-- Resultados do Desconto -->
-                                <div class="card d-none" id="resultadosDesconto">
-                                    <div class="card-body">
-                                        <h5 class="card-title">
-                                            <i class="bi bi-check-circle"></i>
-                                            Resultados do Desconto
-                                        </h5>
-                                        <div class="result-box mb-3">
-                                            <h6 class="text-primary">Preço Original</h6>
-                                            <h3 id="precoOriginalResultado" class="mb-2">R$ 0,00</h3>
-                                        </div>
-                                        <div class="result-box mb-3">
-                                            <h6 class="text-success">Valor do Desconto</h6>
-                                            <h3 id="valorDescontoResultado" class="mb-2">R$ 0,00</h3>
-                                            <small class="text-muted">Porcentagem: <span id="porcentagemDescontoResultado">0%</span></small>
-                                        </div>
-                                        <div class="result-box">
-                                            <h6 class="text-info">Preço Final</h6>
-                                            <h3 id="precoFinalDesconto" class="mb-2">R$ 0,00</h3>
-                                            <small class="text-muted">Economia total: <span id="economiaTotal">R$ 0,00</span></small>
-                                        </div>
+                        <!-- Resultados -->
+                        <div class="card mb-4 d-none" id="resultados">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-check-circle"></i>
+                                    Resultados
+                                </h5>
+                                <div class="result-box mb-3">
+                                    <h6>Preço à Vista</h6>
+                                    <h3 id="precoFinal" class="mb-0">R$ 0,00</h3>
+                                </div>
+                                <div class="result-box mb-3">
+                                    <h6>Preço no PIX</h6>
+                                    <h3 id="precoPix" class="mb-0">R$ 0,00</h3>
+                                    <small class="text-success">Taxa: GRÁTIS</small>
+                                </div>
+                                <div class="result-box">
+                                    <h6>Opções de Parcelamento</h6>
+                                    <div id="opcoesParcelamento">
+                                        <!-- Será preenchido via JavaScript -->
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalhes do Cálculo -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <button class="btn btn-link text-decoration-none p-0" id="toggleDetalhes">
+                                    <i class="bi bi-chevron-down"></i>
+                                    Ver Detalhes do Cálculo
+                                </button>
+                            </div>
+                            <div class="collapse" id="detalhes-calculo">
+                                <!-- Será preenchido via JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Histórico -->
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-clock-history"></i>
+                                    Histórico
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="historico-calculos">
+                                    <!-- Será preenchido via JavaScript -->
                                 </div>
                             </div>
                         </div>
