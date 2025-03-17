@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleDetalhes = document.getElementById('toggleDetalhes');
     const historico = document.getElementById('historico-calculos');
     const toggleTheme = document.getElementById('toggleTheme');
+    const parcelasSelect = document.getElementById('parcelasSelect');
+    let dadosCalculo = null; // Para armazenar os dados do último cálculo
 
     // Inicializa o tema
     const theme = localStorage.getItem('theme') || 'light';
@@ -69,6 +71,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Atualizar opção de parcelamento selecionada
+    parcelasSelect.addEventListener('change', function() {
+        if (dadosCalculo) {
+            atualizarOpcaoParcelamento(dadosCalculo);
+        }
+    });
+
+    function atualizarOpcaoParcelamento(data) {
+        const opcoesParcelamento = document.getElementById('opcoesParcelamento');
+        const parcelas = parseInt(parcelasSelect.value);
+        
+        if (parcelas === 1) {
+            // Mostrar opção à vista no crédito
+            opcoesParcelamento.innerHTML = `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>À vista no crédito</span>
+                        <span>${formatarMoeda(data.preco_credito)}</span>
+                    </div>
+                    <small class="text-muted">Taxa: ${data.taxa_credito}% - Você recebe: ${formatarMoeda(data.preco_credito * (1 - data.taxa_credito/100))}</small>
+                    <small class="text-${data.lucro_credito >= 0 ? 'success' : 'danger'} d-block">
+                        ${data.lucro_credito >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(data.lucro_credito))}
+                    </small>
+                </div>
+            `;
+        } else {
+            // Mostrar opção de parcelamento selecionada
+            const info = data.opcoes_parcelamento[parcelas];
+            opcoesParcelamento.innerHTML = `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${parcelas}x de ${formatarMoeda(info.valor_parcela)}</span>
+                        <span>${formatarMoeda(info.valor_total)}</span>
+                    </div>
+                    <small class="text-muted">
+                        ${parcelas <= 3 ? 
+                            `Você recebe: ${formatarMoeda(info.valor_recebido)} - Custo do parcelamento: ${formatarMoeda(info.custo_parcelamento)}` :
+                            `Taxa: ${info.taxa}% - Você recebe: ${formatarMoeda(info.valor_recebido)}`
+                        }
+                    </small>
+                    <small class="text-${info.lucro >= 0 ? 'success' : 'danger'} d-block">
+                        ${info.lucro >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(info.lucro))}
+                    </small>
+                </div>
+            `;
+        }
+    }
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -95,6 +145,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.error);
             }
 
+            // Armazenar dados do cálculo
+            dadosCalculo = data;
+
             // Mostrar a seção de resultados
             resultados.classList.remove('d-none');
 
@@ -102,43 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
             document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
 
-            // Atualizar opções de parcelamento
-            const opcoesParcelamento = document.getElementById('opcoesParcelamento');
-            opcoesParcelamento.innerHTML = '';
-
-            // Adicionar opção à vista no crédito
-            const divVista = document.createElement('div');
-            divVista.className = 'mb-2';
-            divVista.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>À vista no crédito</span>
-                    <span>${formatarMoeda(data.preco_credito)}</span>
-                </div>
-                <small class="text-muted">Taxa: ${data.taxa_credito}% - Você recebe: ${formatarMoeda(data.preco_credito * (1 - data.taxa_credito/100))}</small>
-            `;
-            opcoesParcelamento.appendChild(divVista);
-
-            // Adicionar opções de parcelamento
-            Object.entries(data.opcoes_parcelamento).forEach(([parcelas, info]) => {
-                const div = document.createElement('div');
-                div.className = 'mb-2';
-                div.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>${parcelas}x de ${formatarMoeda(info.valor_parcela)}</span>
-                        <span>${formatarMoeda(info.valor_total)}</span>
-                    </div>
-                    <small class="text-muted">
-                        ${parcelas <= 3 ? 
-                            `Você recebe: ${formatarMoeda(info.valor_recebido)} - Custo do parcelamento: ${formatarMoeda(info.custo_parcelamento)}` :
-                            `Taxa: ${info.taxa}% - Você recebe: ${formatarMoeda(info.valor_recebido)}`
-                        }
-                    </small>
-                    <small class="text-${info.lucro >= 0 ? 'success' : 'danger'} d-block">
-                        ${info.lucro >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(info.lucro))}
-                    </small>
-                `;
-                opcoesParcelamento.appendChild(div);
-            });
+            // Atualizar opção de parcelamento selecionada
+            atualizarOpcaoParcelamento(data);
 
             // Atualizar detalhes do cálculo
             atualizarDetalhesCalculo(data);
