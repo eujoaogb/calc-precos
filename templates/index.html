@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,12 @@
             <div class="col-md-10">
                 <div class="card shadow-lg">
                     <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Calculadora de Preços</h3>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0">Calculadora de Preços</h3>
+                            <button id="toggleTheme" class="btn btn-outline-light">
+                                <i class="bi bi-moon-fill"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
                         <form id="calculadoraForm">

@@ -4,6 +4,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const detalhesCalculo = document.getElementById('detalhes-calculo');
     const toggleDetalhes = document.getElementById('toggleDetalhes');
     const historico = document.getElementById('historico-calculos');
+    const toggleTheme = document.getElementById('toggleTheme');
+
+    // Inicializa o tema
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    atualizarBotaoTema(theme);
+
+    // Toggle do tema
+    toggleTheme.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        atualizarBotaoTema(newTheme);
+    });
+
+    function atualizarBotaoTema(theme) {
+        const icon = toggleTheme.querySelector('i');
+        if (theme === 'dark') {
+            icon.classList.remove('bi-moon-fill');
+            icon.classList.add('bi-sun-fill');
+            toggleTheme.title = 'Mudar para modo claro';
+        } else {
+            icon.classList.remove('bi-sun-fill');
+            icon.classList.add('bi-moon-fill');
+            toggleTheme.title = 'Mudar para modo escuro';
+        }
+    }
 
     // Inicializa o histórico
     let historicoCalculos = JSON.parse(localStorage.getItem('historicoCalculos')) || [];
