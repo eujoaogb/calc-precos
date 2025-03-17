@@ -159,6 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const custoTotal = data.preco_custo + data.custo_adicional;
         const lucro = data.preco_final - custoTotal;
         const descontoPix = data.preco_final - data.preco_pix;
+        const lucroPix = data.preco_pix - custoTotal;
+        const lucroParcelado = data.preco_parcelado - custoTotal;
+        const taxaParceladoValor = data.preco_parcelado - data.preco_final;
         
         const detalhesHtml = `
             <div class="calculation-step">
@@ -172,16 +175,41 @@ document.addEventListener('DOMContentLoaded', function() {
             
             <div class="calculation-step">
                 <h6>Análise PIX:</h6>
-                <p>Desconto PIX (${formatarPorcentagem(data.porcentagem_pix)}): ${formatarMoeda(descontoPix)}</p>
-                <p>Preço Final PIX: ${formatarMoeda(data.preco_pix)}</p>
-                <p>Lucro no PIX: ${formatarMoeda(data.lucro_pix)}</p>
+                <p>Preço à Vista: ${formatarMoeda(data.preco_final)}</p>
+                <p>Desconto PIX (${formatarPorcentagem(data.porcentagem_pix)}): -${formatarMoeda(descontoPix)}</p>
+                <p class="fw-bold">Preço Final PIX: ${formatarMoeda(data.preco_pix)}</p>
+                <p class="text-${lucroPix >= 0 ? 'success' : 'danger'}">
+                    ${lucroPix >= 0 ? 'Lucro' : 'Prejuízo'} no PIX: ${formatarMoeda(Math.abs(lucroPix))}
+                    <small class="text-muted">(${formatarPorcentagem((lucroPix/custoTotal) * 100)} sobre o custo)</small>
+                </p>
             </div>
             
             <div class="calculation-step">
                 <h6>Análise Parcelamento:</h6>
-                <p>Taxa de Parcelamento (${formatarPorcentagem(data.taxa_parcelamento)}): ${formatarMoeda(data.preco_parcelado - data.preco_final)}</p>
-                <p>Preço Final Parcelado: ${formatarMoeda(data.preco_parcelado)}</p>
-                <p>Parcelas disponíveis: até ${data.max_parcelas}x de ${formatarMoeda(data.preco_parcelado / data.max_parcelas)}</p>
+                <p>Preço à Vista: ${formatarMoeda(data.preco_final)}</p>
+                <p>Taxa de Parcelamento (${formatarPorcentagem(data.taxa_parcelamento)}): +${formatarMoeda(taxaParceladoValor)}</p>
+                <p class="fw-bold">Preço Final Parcelado: ${formatarMoeda(data.preco_parcelado)}</p>
+                <p class="text-${lucroParcelado >= 0 ? 'success' : 'danger'}">
+                    ${lucroParcelado >= 0 ? 'Lucro' : 'Prejuízo'} no Parcelado: ${formatarMoeda(Math.abs(lucroParcelado))}
+                    <small class="text-muted">(${formatarPorcentagem((lucroParcelado/custoTotal) * 100)} sobre o custo)</small>
+                </p>
+                <div class="mt-3">
+                    <h6>Opções de Parcelamento:</h6>
+                    <div class="row">
+                        ${Array.from({length: data.max_parcelas}, (_, i) => i + 1).map(parcela => `
+                            <div class="col-md-4 mb-2">
+                                <div class="card">
+                                    <div class="card-body p-2">
+                                        <h6 class="mb-1">${parcela}x de ${formatarMoeda(data.preco_parcelado / parcela)}</h6>
+                                        <small class="text-muted">
+                                            Total: ${formatarMoeda(data.preco_parcelado)}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
             </div>
         `;
         
