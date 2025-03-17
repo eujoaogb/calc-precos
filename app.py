@@ -21,25 +21,28 @@ def calcular():
         # Extrair dados com valores padrão
         preco_custo = float(dados.get('preco_custo', 0))
         custo_adicional = float(dados.get('custo_adicional', 0))
-        margem_lucro = float(dados.get('margem_lucro', 0))
-        desconto_pix = float(dados.get('desconto_pix', 0))
+        porcentagem_lucro = float(dados.get('porcentagem_lucro', 0))
+        porcentagem_pix = float(dados.get('porcentagem_pix', 0))
+        max_parcelas = int(dados.get('max_parcelas', 1))
         taxa_parcelamento = float(dados.get('taxa_parcelamento', 0))
-        num_parcelas = int(dados.get('num_parcelas', 1))
 
         # Log dos dados recebidos
         logger.info(f"Dados recebidos: {dados}")
 
         # Validar dados
-        if preco_custo < 0 or margem_lucro < 0 or desconto_pix < 0 or taxa_parcelamento < 0:
+        if preco_custo < 0 or porcentagem_lucro < 0 or porcentagem_pix < 0 or taxa_parcelamento < 0:
             raise ValueError("Os valores não podem ser negativos")
 
         # Cálculos
         custo_total = preco_custo + custo_adicional
-        margem = custo_total * (margem_lucro / 100)
-        preco_final = custo_total + margem
+        margem_lucro = custo_total * (porcentagem_lucro / 100)
+        preco_final = custo_total + margem_lucro
+        lucro_vista = preco_final - custo_total
 
         # Cálculo do preço no PIX
-        preco_pix = preco_final * (1 - desconto_pix / 100)
+        desconto_pix = preco_final * (porcentagem_pix / 100)
+        preco_pix = preco_final - desconto_pix
+        lucro_pix = preco_pix - custo_total
 
         # Cálculo do preço parcelado
         preco_parcelado = preco_final * (1 + taxa_parcelamento / 100)
@@ -48,10 +51,17 @@ def calcular():
         logger.info(f"Resultados calculados: final={preco_final}, pix={preco_pix}, parcelado={preco_parcelado}")
 
         return jsonify({
-            'preco_final': round(preco_final, 2),
-            'preco_pix': round(preco_pix, 2),
-            'preco_parcelado': round(preco_parcelado, 2),
-            'valor_parcela': round(preco_parcelado / num_parcelas, 2)
+            'preco_custo': preco_custo,
+            'custo_adicional': custo_adicional,
+            'porcentagem_lucro': porcentagem_lucro,
+            'porcentagem_pix': porcentagem_pix,
+            'preco_final': preco_final,
+            'lucro_vista': lucro_vista,
+            'preco_pix': preco_pix,
+            'lucro_pix': lucro_pix,
+            'preco_parcelado': preco_parcelado,
+            'max_parcelas': max_parcelas,
+            'taxa_parcelamento': taxa_parcelamento
         })
 
     except ValueError as e:

@@ -50,12 +50,12 @@
                                         Margens e Descontos
                                     </h5>
                                     <div class="mb-3">
-                                        <label for="margemLucro" class="form-label">Margem de Lucro (%)</label>
-                                        <input type="number" class="form-control" id="margemLucro" min="0" max="1000" step="0.1" value="30" required>
+                                        <label for="porcentagemLucro" class="form-label">Margem de Lucro (%)</label>
+                                        <input type="number" class="form-control" id="porcentagemLucro" value="30" min="0" max="1000" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="descontoPix" class="form-label">Desconto no PIX (%)</label>
-                                        <input type="number" class="form-control" id="descontoPix" min="0" max="100" step="0.1" value="10" required>
+                                        <label for="porcentagemPix" class="form-label">Desconto PIX (%)</label>
+                                        <input type="number" class="form-control" id="porcentagemPix" value="10" min="0" max="100" required>
                                     </div>
                                 </div>
                             </div>
@@ -68,12 +68,25 @@
                                         Opções de Parcelamento
                                     </h5>
                                     <div class="mb-3">
-                                        <label for="numParcelas" class="form-label">Número de Parcelas</label>
-                                        <input type="number" class="form-control" id="numParcelas" min="1" max="12" value="1" required>
+                                        <label for="maxParcelas" class="form-label">Número Máximo de Parcelas</label>
+                                        <select class="form-select" id="maxParcelas">
+                                            <option value="1">À vista</option>
+                                            <option value="2">2x</option>
+                                            <option value="3">3x</option>
+                                            <option value="4">4x</option>
+                                            <option value="5">5x</option>
+                                            <option value="6">6x</option>
+                                            <option value="7">7x</option>
+                                            <option value="8">8x</option>
+                                            <option value="9">9x</option>
+                                            <option value="10">10x</option>
+                                            <option value="11">11x</option>
+                                            <option value="12" selected>12x</option>
+                                        </select>
                                     </div>
                                     <div class="mb-3">
                                         <label for="taxaParcelamento" class="form-label">Taxa de Parcelamento (%)</label>
-                                        <input type="number" class="form-control" id="taxaParcelamento" min="0" max="100" step="0.1" value="15" required>
+                                        <input type="number" class="form-control" id="taxaParcelamento" value="15" min="0" max="100" required>
                                         <small class="text-muted">Taxa cobrada pela operadora de cartão</small>
                                     </div>
                                 </div>
@@ -86,121 +99,105 @@
                         </form>
 
                         <!-- Resultados -->
-                        <div id="resultados" class="d-none mt-4">
-                            <div class="card mb-3">
-                                <div class="card-header">
-                                    <h5 class="card-title mb-0">Resultados</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-check-circle"></i>
+                                    Resultados
+                                </h5>
+                                
+                                <!-- Preço à Vista -->
+                                <div class="result-box mb-3">
+                                    <h6 class="text-primary">Preço à Vista</h6>
+                                    <h3 id="precoFinal" class="mb-2">R$ 0,00</h3>
+                                    <small class="text-muted">Lucro estimado: <span id="lucroVista">R$ 0,00</span></small>
                                 </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Preço à Vista</h5>
-                                                    <p class="card-text price-result" id="precoFinal">R$ 0,00</p>
-                                                    <div class="alert alert-info" role="alert">
-                                                        <i class="bi bi-info-circle-fill me-2"></i>
-                                                        Este é o preço base para pagamento em dinheiro ou cartão em 1x. Inclui seu custo + margem de lucro.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Preço no PIX</h5>
-                                                    <p class="card-text price-result" id="precoPix">R$ 0,00</p>
-                                                    <div class="alert alert-info" role="alert">
-                                                        <i class="bi bi-info-circle-fill me-2"></i>
-                                                        Valor com desconto para pagamento via PIX. Recebimento imediato sem taxas.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">Preço Parcelado</h5>
-                                                    <p class="card-text price-result" id="precoParcelado">R$ 0,00</p>
-                                                    <div class="alert alert-info" role="alert">
-                                                        <i class="bi bi-info-circle-fill me-2"></i>
-                                                        Valor ajustado para cobrir as taxas de parcelamento da maquininha/operadora.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                                <!-- Preço PIX -->
+                                <div class="result-box mb-3">
+                                    <h6 class="text-success">Preço no PIX</h6>
+                                    <h3 id="precoPix" class="mb-2">R$ 0,00</h3>
+                                    <small class="text-muted">Lucro estimado: <span id="lucroPix">R$ 0,00</span></small>
                                 </div>
-                            </div>
 
-                            <!-- Detalhes do Cálculo -->
-                            <div class="card mt-4">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="card-title mb-0">
-                                            <i class="bi bi-info-circle"></i>
-                                            Detalhes do Cálculo
-                                        </h5>
-                                        <button class="btn btn-sm btn-outline-primary" id="toggleDetalhes">
-                                            <i class="bi bi-chevron-down"></i>
-                                        </button>
-                                    </div>
-                                    <div id="detalhes-calculo" class="collapse">
-                                        <div class="calculation-step mb-4">
-                                            <h6><i class="bi bi-calculator me-2"></i>Cálculo do Preço Final (à Vista)</h6>
-                                            <div class="alert alert-light">
-                                                <p><strong>Como é calculado:</strong></p>
-                                                <ul>
-                                                    <li>Preço de Custo: Valor que você paga pelo produto</li>
-                                                    <li>Custos Adicionais: Frete, embalagem, etc.</li>
-                                                    <li>Margem de Lucro: Sua porcentagem de ganho</li>
-                                                    <li>Preço Final = (Custo + Adicionais) + Margem de Lucro</li>
-                                                </ul>
-                                                <p id="detalhesPrecoFinal" class="mt-2"></p>
-                                            </div>
-                                        </div>
-
-                                        <div class="calculation-step mb-4">
-                                            <h6><i class="bi bi-phone me-2"></i>Cálculo do PIX</h6>
-                                            <div class="alert alert-light">
-                                                <p><strong>Vantagens do PIX:</strong></p>
-                                                <ul>
-                                                    <li>Recebimento instantâneo</li>
-                                                    <li>Sem taxas de operadora</li>
-                                                    <li>Cliente economiza com o desconto</li>
-                                                    <li>Melhor fluxo de caixa para seu negócio</li>
-                                                </ul>
-                                                <p id="detalhesPix" class="mt-2"></p>
-                                            </div>
-                                        </div>
-
-                                        <div class="calculation-step">
-                                            <h6><i class="bi bi-credit-card me-2"></i>Cálculo do Parcelamento</h6>
-                                            <div class="alert alert-light">
-                                                <p><strong>Por que o valor é maior:</strong></p>
-                                                <ul>
-                                                    <li>Taxa da maquininha/operadora por parcela</li>
-                                                    <li>Tempo para receber o valor total</li>
-                                                    <li>Risco de chargeback ou cancelamento</li>
-                                                    <li>Custo do dinheiro no tempo</li>
-                                                </ul>
-                                                <p id="detalhesParcelamento" class="mt-2"></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Histórico -->
-                            <div class="card mt-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">
-                                        <i class="bi bi-clock-history"></i>
-                                        Histórico
-                                    </h5>
-                                    <div id="historico-calculos">
+                                <!-- Preço Parcelado -->
+                                <div class="result-box">
+                                    <h6 class="text-info">Parcelamento</h6>
+                                    <h3 id="precoParcelado" class="mb-2">R$ 0,00</h3>
+                                    <div id="opcoesParcelamento" class="mt-2">
                                         <!-- Será preenchido via JavaScript -->
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalhes do Cálculo -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-info-circle"></i>
+                                        Detalhes do Cálculo
+                                    </h5>
+                                    <button class="btn btn-sm btn-outline-primary" id="toggleDetalhes">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                                <div id="detalhes-calculo" class="collapse">
+                                    <div class="calculation-step mb-4">
+                                        <h6><i class="bi bi-calculator me-2"></i>Cálculo do Preço Final (à Vista)</h6>
+                                        <div class="alert alert-light">
+                                            <p><strong>Como é calculado:</strong></p>
+                                            <ul>
+                                                <li>Preço de Custo: Valor que você paga pelo produto</li>
+                                                <li>Custos Adicionais: Frete, embalagem, etc.</li>
+                                                <li>Margem de Lucro: Sua porcentagem de ganho</li>
+                                                <li>Preço Final = (Custo + Adicionais) + Margem de Lucro</li>
+                                            </ul>
+                                            <p id="detalhesPrecoFinal" class="mt-2"></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="calculation-step mb-4">
+                                        <h6><i class="bi bi-phone me-2"></i>Cálculo do PIX</h6>
+                                        <div class="alert alert-light">
+                                            <p><strong>Vantagens do PIX:</strong></p>
+                                            <ul>
+                                                <li>Recebimento instantâneo</li>
+                                                <li>Sem taxas de operadora</li>
+                                                <li>Cliente economiza com o desconto</li>
+                                                <li>Melhor fluxo de caixa para seu negócio</li>
+                                            </ul>
+                                            <p id="detalhesPix" class="mt-2"></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="calculation-step">
+                                        <h6><i class="bi bi-credit-card me-2"></i>Cálculo do Parcelamento</h6>
+                                        <div class="alert alert-light">
+                                            <p><strong>Por que o valor é maior:</strong></p>
+                                            <ul>
+                                                <li>Taxa da maquininha/operadora por parcela</li>
+                                                <li>Tempo para receber o valor total</li>
+                                                <li>Risco de chargeback ou cancelamento</li>
+                                                <li>Custo do dinheiro no tempo</li>
+                                            </ul>
+                                            <p id="detalhesParcelamento" class="mt-2"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Histórico -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-clock-history"></i>
+                                    Histórico
+                                </h5>
+                                <div id="historico-calculos">
+                                    <!-- Será preenchido via JavaScript -->
                                 </div>
                             </div>
                         </div>

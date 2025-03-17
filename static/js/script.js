@@ -122,42 +122,60 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
         document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
         document.getElementById('precoParcelado').textContent = formatarMoeda(data.preco_parcelado);
+        document.getElementById('lucroVista').textContent = formatarMoeda(data.lucro_vista);
+        document.getElementById('lucroPix').textContent = formatarMoeda(data.lucro_pix);
         
-        // Atualizar os detalhes do cálculo
+        // Atualiza as opções de parcelamento
+        const opcoesParcelamento = document.getElementById('opcoesParcelamento');
+        opcoesParcelamento.innerHTML = '';
+        
+        for (let i = 1; i <= data.max_parcelas; i++) {
+            const valorParcela = data.preco_parcelado / i;
+            const div = document.createElement('div');
+            div.className = 'mb-2';
+            div.innerHTML = `
+                <small class="text-muted">
+                    ${i}x de ${formatarMoeda(valorParcela)}
+                    ${i === 1 ? ' (à vista)' : ' sem juros'}
+                </small>
+            `;
+            opcoesParcelamento.appendChild(div);
+        }
+        
+        atualizarDetalhesCalculo(data);
+    }
+
+    function atualizarDetalhesCalculo(data) {
         const custoTotal = data.preco_custo + data.custo_adicional;
         const lucro = data.preco_final - custoTotal;
         const descontoPix = data.preco_final - data.preco_pix;
         
-        // Atualizar a seção de detalhes
-        document.getElementById('detalhesPrecoFinal').innerHTML = `
-            <strong>Exemplo do cálculo:</strong><br>
-            Custo do Produto: ${formatarMoeda(data.preco_custo)}<br>
-            Custos Adicionais: ${formatarMoeda(data.custo_adicional)}<br>
-            Custo Total: ${formatarMoeda(custoTotal)}<br>
-            Margem de Lucro (${data.margem_lucro}%): ${formatarMoeda(lucro)}<br>
-            <strong>Preço Final: ${formatarMoeda(data.preco_final)}</strong>
+        const detalhesHtml = `
+            <div class="calculation-step">
+                <h6>Composição do Preço:</h6>
+                <p>Custo Base: ${formatarMoeda(data.preco_custo)}</p>
+                <p>Custo Adicional: ${formatarMoeda(data.custo_adicional)}</p>
+                <p>Custo Total: ${formatarMoeda(custoTotal)}</p>
+                <p>Margem de Lucro (${formatarPorcentagem(data.porcentagem_lucro)}): ${formatarMoeda(lucro)}</p>
+                <p class="fw-bold">Preço Final: ${formatarMoeda(data.preco_final)}</p>
+            </div>
+            
+            <div class="calculation-step">
+                <h6>Análise PIX:</h6>
+                <p>Desconto PIX (${formatarPorcentagem(data.porcentagem_pix)}): ${formatarMoeda(descontoPix)}</p>
+                <p>Preço Final PIX: ${formatarMoeda(data.preco_pix)}</p>
+                <p>Lucro no PIX: ${formatarMoeda(data.lucro_pix)}</p>
+            </div>
+            
+            <div class="calculation-step">
+                <h6>Análise Parcelamento:</h6>
+                <p>Taxa de Parcelamento (${formatarPorcentagem(data.taxa_parcelamento)}): ${formatarMoeda(data.preco_parcelado - data.preco_final)}</p>
+                <p>Preço Final Parcelado: ${formatarMoeda(data.preco_parcelado)}</p>
+                <p>Parcelas disponíveis: até ${data.max_parcelas}x de ${formatarMoeda(data.preco_parcelado / data.max_parcelas)}</p>
+            </div>
         `;
-
-        document.getElementById('detalhesPix').innerHTML = `
-            <strong>Exemplo do desconto:</strong><br>
-            Preço à Vista: ${formatarMoeda(data.preco_final)}<br>
-            Desconto PIX: ${data.desconto_pix}%<br>
-            Economia para o cliente: ${formatarMoeda(descontoPix)}<br>
-            <strong>Preço no PIX: ${formatarMoeda(data.preco_pix)}</strong>
-        `;
-
-        document.getElementById('detalhesParcelamento').innerHTML = `
-            <strong>Exemplo do parcelamento:</strong><br>
-            Preço à Vista: ${formatarMoeda(data.preco_final)}<br>
-            Taxa de Parcelamento: ${data.taxa_parcelamento}%<br>
-            Acréscimo: ${formatarMoeda(data.preco_parcelado - data.preco_final)}<br>
-            <strong>Preço Parcelado: ${formatarMoeda(data.preco_parcelado)}</strong><br>
-            ${data.num_parcelas}x de ${formatarMoeda(data.preco_parcelado / data.num_parcelas)}
-        `;
-
-        // Mostrar a seção de resultados e detalhes
-        document.getElementById('resultados').classList.remove('d-none');
-        document.getElementById('detalhes-calculo').style.display = 'block';
+        
+        detalhesCalculo.innerHTML = detalhesHtml;
     }
 
     function adicionarAoHistorico(data) {
