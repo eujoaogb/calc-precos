@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 # Taxas da InfinitePay
 TAXAS_INFINITE = {
     'pix': 0,  # Grátis
+    'boleto': 0,  # Grátis
     'credito_vista': 4.20,
     'parcelado': {
         2: 6.09,
@@ -59,6 +60,10 @@ def calcular():
         preco_pix = preco_final
         lucro_pix = preco_pix - custo_total
 
+        # Cálculo do preço no Boleto (sem taxa)
+        preco_boleto = preco_final
+        lucro_boleto = preco_boleto - custo_total
+
         # Cálculo do preço no crédito à vista
         taxa_credito = TAXAS_INFINITE['credito_vista']
         preco_credito = preco_final
@@ -101,6 +106,8 @@ def calcular():
             'lucro_vista': lucro_vista,
             'preco_pix': preco_pix,
             'lucro_pix': lucro_pix,
+            'preco_boleto': preco_boleto,
+            'lucro_boleto': lucro_boleto,
             'preco_credito': preco_credito,
             'lucro_credito': lucro_credito,
             'taxa_credito': taxa_credito,

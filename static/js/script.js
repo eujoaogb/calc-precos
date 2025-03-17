@@ -154,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Atualizar os resultados básicos
             document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
             document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
+            document.getElementById('precoBoleto').textContent = formatarMoeda(data.preco_boleto);
 
             // Atualizar opção de parcelamento selecionada
             atualizarOpcaoParcelamento(data);
@@ -200,11 +201,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div class="calculation-step mt-3">
-                    <h6>Análise PIX:</h6>
+                    <h6>Análise PIX e Boleto:</h6>
                     <p>Taxa PIX: GRÁTIS</p>
+                    <p>Taxa Boleto: GRÁTIS</p>
                     <p>Você recebe: ${formatarMoeda(data.preco_pix)}</p>
                     <p class="text-${data.lucro_pix >= 0 ? 'success' : 'danger'}">
-                        ${data.lucro_pix >= 0 ? 'Lucro' : 'Prejuízo'} no PIX: ${formatarMoeda(Math.abs(data.lucro_pix))}
+                        ${data.lucro_pix >= 0 ? 'Lucro' : 'Prejuízo'} no PIX/Boleto: ${formatarMoeda(Math.abs(data.lucro_pix))}
                     </p>
                 </div>
 
