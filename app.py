@@ -70,30 +70,54 @@ def calcular():
         valor_recebido_credito = preco_credito * (1 - taxa_credito/100)
         lucro_credito = valor_recebido_credito - custo_total
 
-        # Cálculos para cada opção de parcelamento
+        # Calcular preços e lucros para cada opção de parcelamento
         opcoes_parcelamento = {}
-        for parcelas, taxa in TAXAS_INFINITE['parcelado'].items():
-            valor_total = preco_final
-            valor_parcela = valor_total / parcelas
-            
-            # Se for até 3x, você recebe o valor total e paga a taxa
-            if parcelas <= 3:
-                valor_recebido = valor_total
-                custo_parcelamento = valor_total * (taxa/100)
-                lucro = valor_recebido - custo_total - custo_parcelamento
+        for parcelas, taxa in TAXAS_INFINITE.items():
+            if parcelas == 'pix' or parcelas == 'boleto':
+                continue
+                
+            if parcelas == 'credito':
+                preco_credito = preco_final
+                lucro_credito = preco_credito * (1 - taxa/100) - preco_custo - custo_adicional
+                opcoes_parcelamento[parcelas] = {
+                    'preco_credito': preco_credito,
+                    'lucro_credito': lucro_credito,
+                    'taxa_credito': taxa
+                }
             else:
-                # Para mais de 3x, o cliente paga a taxa
-                valor_recebido = valor_total * (1 - taxa/100)
-                lucro = valor_recebido - custo_total
-            
-            opcoes_parcelamento[parcelas] = {
-                'valor_parcela': valor_parcela,
-                'valor_total': valor_total,
-                'valor_recebido': valor_recebido,
-                'lucro': lucro,
-                'taxa': taxa,
-                'custo_parcelamento': valor_total * (taxa/100) if parcelas <= 3 else 0
-            }
+                num_parcelas = int(parcelas)
+                if num_parcelas <= 3:
+                    # Para até 3x, o vendedor recebe o valor total mas paga a taxa
+                    valor_parcela = preco_final / num_parcelas
+                    valor_total = preco_final
+                    taxa_parcelamento = taxa
+                    valor_recebido = valor_total  # Recebe o valor total
+                    custo_parcelamento = valor_total * (taxa_parcelamento/100)  # Paga a taxa
+                    lucro_parcelamento = valor_recebido - custo_parcelamento - preco_custo - custo_adicional
+                    
+                    opcoes_parcelamento[parcelas] = {
+                        'valor_parcela': valor_parcela,
+                        'valor_total': valor_total,
+                        'taxa': taxa_parcelamento,
+                        'valor_recebido': valor_recebido,
+                        'custo_parcelamento': custo_parcelamento,
+                        'lucro': lucro_parcelamento
+                    }
+                else:
+                    # Para 4x ou mais, o cliente paga a taxa
+                    valor_parcela = preco_final / num_parcelas
+                    valor_total = preco_final * (1 + taxa/100)
+                    taxa_parcelamento = taxa
+                    valor_recebido = preco_final  # Recebe o valor sem a taxa
+                    lucro_parcelamento = valor_recebido - preco_custo - custo_adicional
+                    
+                    opcoes_parcelamento[parcelas] = {
+                        'valor_parcela': valor_parcela,
+                        'valor_total': valor_total,
+                        'taxa': taxa_parcelamento,
+                        'valor_recebido': valor_recebido,
+                        'lucro': lucro_parcelamento
+                    }
 
         # Log dos resultados
         logger.info(f"Resultados calculados: final={preco_final}, pix={preco_pix}")

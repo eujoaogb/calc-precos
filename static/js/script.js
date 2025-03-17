@@ -79,43 +79,61 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function atualizarOpcaoParcelamento(data) {
-        const opcoesParcelamento = document.getElementById('opcoesParcelamento');
-        const parcelas = parseInt(parcelasSelect.value);
+        const parcelasSelect = document.getElementById('parcelasSelect');
+        const opcaoParcelamento = document.getElementById('opcaoParcelamento');
+        const parcelas = parcelasSelect.value;
         
-        if (parcelas === 1) {
-            // Mostrar opção à vista no crédito
-            opcoesParcelamento.innerHTML = `
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>À vista no crédito</span>
-                        <span>${formatarMoeda(data.preco_credito)}</span>
+        if (parcelas === '1') {
+            // Mostrar opção de crédito à vista
+            const creditoData = data.parcelas_credito;
+            opcaoParcelamento.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Crédito à Vista</h5>
                     </div>
-                    <small class="text-muted">Taxa: ${data.taxa_credito}% - Você recebe: ${formatarMoeda(data.preco_credito * (1 - data.taxa_credito/100))}</small>
-                    <small class="text-${data.lucro_credito >= 0 ? 'success' : 'danger'} d-block">
-                        ${data.lucro_credito >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(data.lucro_credito))}
-                    </small>
+                    <div class="card-body">
+                        <p>Valor Total: ${formatarMoeda(creditoData.preco_credito)}</p>
+                        <p>Taxa (${formatarPorcentagem(creditoData.taxa_credito)}): ${formatarMoeda(creditoData.preco_credito * (creditoData.taxa_credito/100))}</p>
+                        <p>Você recebe: ${formatarMoeda(creditoData.preco_credito * (1 - creditoData.taxa_credito/100))}</p>
+                        <p class="text-${creditoData.lucro_credito >= 0 ? 'success' : 'danger'}">
+                            ${creditoData.lucro_credito >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(creditoData.lucro_credito))}
+                        </p>
+                    </div>
                 </div>
             `;
         } else {
-            // Mostrar opção de parcelamento selecionada
-            const info = data.opcoes_parcelamento[parcelas];
-            opcoesParcelamento.innerHTML = `
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>${parcelas}x de ${formatarMoeda(info.valor_parcela)}</span>
-                        <span>${formatarMoeda(info.valor_total)}</span>
-                    </div>
-                    <small class="text-muted">
-                        ${parcelas <= 3 ? 
-                            `Você recebe: ${formatarMoeda(info.valor_recebido)} - Custo do parcelamento: ${formatarMoeda(info.custo_parcelamento)}` :
-                            `Taxa: ${info.taxa}% - Você recebe: ${formatarMoeda(info.valor_recebido)}`
-                        }
-                    </small>
-                    <small class="text-${info.lucro >= 0 ? 'success' : 'danger'} d-block">
-                        ${info.lucro >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(info.lucro))}
-                    </small>
+            // Mostrar opção de parcelamento
+            const parcelamentoData = data[`parcelas_${parcelas}`];
+            if (parcelamentoData) {
+                let html = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Parcelamento em ${parcelas}x</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Valor da Parcela: ${formatarMoeda(parcelamentoData.valor_parcela)}</p>
+                            <p>Valor Total: ${formatarMoeda(parcelamentoData.valor_total)}</p>
+                            <p>Taxa (${formatarPorcentagem(parcelamentoData.taxa)}): ${formatarMoeda(parcelamentoData.valor_total * (parcelamentoData.taxa/100))}</p>`;
+                
+                if (parseInt(parcelas) <= 3) {
+                    html += `
+                        <p>Você recebe: ${formatarMoeda(parcelamentoData.valor_recebido)}</p>
+                        <p>Custo do Parcelamento: ${formatarMoeda(parcelamentoData.custo_parcelamento)}</p>`;
+                } else {
+                    html += `
+                        <p>Cliente paga: ${formatarMoeda(parcelamentoData.valor_total)}</p>
+                        <p>Você recebe: ${formatarMoeda(parcelamentoData.valor_recebido)}</p>`;
+                }
+                
+                html += `
+                    <p class="text-${parcelamentoData.lucro >= 0 ? 'success' : 'danger'}">
+                        ${parcelamentoData.lucro >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(parcelamentoData.lucro))}
+                    </p>
                 </div>
-            `;
+            </div>`;
+                
+                opcaoParcelamento.innerHTML = html;
+            }
         }
     }
 
