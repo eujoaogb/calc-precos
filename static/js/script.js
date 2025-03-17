@@ -74,10 +74,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Obter valores dos campos
         const precoCusto = parseFloat(precoCustoInput.value.replace('R$', '').replace('.', '').replace(',', '.'));
-        const porcentagemLucro = parseFloat(document.getElementById('porcentagemLucro').value);
-        const porcentagemPix = parseFloat(document.getElementById('porcentagemPix').value);
+        const margemLucro = parseFloat(document.getElementById('margemLucro').value);
+        const descontoPix = parseFloat(document.getElementById('descontoPix').value);
         const custoAdicional = parseFloat(custoAdicionalInput.value.replace('R$', '').replace('.', '').replace(',', '.')) || 0;
-        const maxParcelas = parseInt(document.getElementById('maxParcelas').value);
+        const numParcelas = parseInt(document.getElementById('numParcelas').value);
         const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value);
 
         try {
@@ -88,22 +88,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({
                     preco_custo: precoCusto,
-                    porcentagem_lucro: porcentagemLucro,
-                    porcentagem_pix: porcentagemPix,
                     custo_adicional: custoAdicional,
-                    max_parcelas: maxParcelas,
-                    taxa_parcelamento: taxaParcelamento
+                    margem_lucro: margemLucro,
+                    desconto_pix: descontoPix,
+                    taxa_parcelamento: taxaParcelamento,
+                    num_parcelas: numParcelas
                 })
             });
 
             const data = await response.json();
+            if (data.error) {
+                throw new Error(data.error);
+            }
             atualizarResultados(data);
             adicionarAoHistorico(data);
             resultados.classList.remove('d-none');
             resultados.scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
             console.error('Erro:', error);
-            alert('Erro ao calcular os preços. Por favor, tente novamente.');
+            alert(error.message || 'Erro ao calcular os preços. Por favor, tente novamente.');
         }
     });
 
@@ -231,9 +234,9 @@ function recarregarCalculo(index) {
     if (registro) {
         document.getElementById('precoCusto').value = formatarMoeda(registro.valores.preco_custo);
         document.getElementById('custoAdicional').value = formatarMoeda(registro.valores.custo_adicional);
-        document.getElementById('porcentagemLucro').value = registro.valores.porcentagem_lucro;
-        document.getElementById('porcentagemPix').value = registro.valores.porcentagem_pix;
-        document.getElementById('maxParcelas').value = registro.valores.max_parcelas;
+        document.getElementById('margemLucro').value = registro.valores.margem_lucro;
+        document.getElementById('descontoPix').value = registro.valores.desconto_pix;
+        document.getElementById('numParcelas').value = registro.valores.num_parcelas;
         document.getElementById('taxaParcelamento').value = registro.valores.taxa_parcelamento;
         
         document.getElementById('calculadoraForm').dispatchEvent(new Event('submit'));
