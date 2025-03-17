@@ -85,18 +85,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (parcelas === '1') {
             // Mostrar opção de crédito à vista
-            const creditoData = data.parcelas_credito;
             opcaoParcelamento.innerHTML = `
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">Crédito à Vista</h5>
                     </div>
                     <div class="card-body">
-                        <p>Valor Total: ${formatarMoeda(creditoData.preco_credito)}</p>
-                        <p>Taxa (${formatarPorcentagem(creditoData.taxa_credito)}): ${formatarMoeda(creditoData.preco_credito * (creditoData.taxa_credito/100))}</p>
-                        <p>Você recebe: ${formatarMoeda(creditoData.preco_credito * (1 - creditoData.taxa_credito/100))}</p>
-                        <p class="text-${creditoData.lucro_credito >= 0 ? 'success' : 'danger'}">
-                            ${creditoData.lucro_credito >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(creditoData.lucro_credito))}
+                        <p>Valor Total: ${formatarMoeda(data.preco_credito)}</p>
+                        <p>Taxa (4.20%): ${formatarMoeda(data.preco_credito * 0.042)}</p>
+                        <p>Você recebe: ${formatarMoeda(data.preco_credito * 0.958)}</p>
+                        <p class="text-${data.lucro_credito >= 0 ? 'success' : 'danger'}">
+                            ${data.lucro_credito >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(data.lucro_credito))}
                         </p>
                     </div>
                 </div>

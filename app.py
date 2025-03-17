@@ -11,22 +11,20 @@ logger = logging.getLogger(__name__)
 
 # Taxas da InfinitePay
 TAXAS_INFINITE = {
-    'pix': 0,  # Grátis
-    'boleto': 0,  # Grátis
-    'credito_vista': 4.20,
-    'parcelado': {
-        2: 6.09,
-        3: 7.01,
-        4: 7.91,
-        5: 8.80,
-        6: 9.67,
-        7: 12.59,
-        8: 13.42,
-        9: 14.25,
-        10: 15.06,
-        11: 15.87,
-        12: 16.66
-    }
+    'pix': 0.00,
+    'boleto': 0.00,
+    'credito': 4.20,
+    '2': 6.09,
+    '3': 7.01,
+    '4': 7.91,
+    '5': 8.79,
+    '6': 9.66,
+    '7': 10.52,
+    '8': 11.37,
+    '9': 12.21,
+    '10': 13.04,
+    '11': 13.86,
+    '12': 16.66
 }
 
 @app.route('/')
@@ -50,25 +48,20 @@ def calcular():
         if preco_custo < 0 or porcentagem_lucro < 0:
             raise ValueError("Os valores não podem ser negativos")
 
-        # Cálculos básicos
-        custo_total = preco_custo + custo_adicional
-        margem_lucro = custo_total * (porcentagem_lucro / 100)
-        preco_final = custo_total + margem_lucro
-        lucro_vista = preco_final - custo_total
-
-        # Cálculo do preço no PIX (sem taxa)
+        # Cálculo do preço final
+        preco_final = preco_custo + custo_adicional
+        if porcentagem_lucro > 0:
+            preco_final *= (1 + porcentagem_lucro/100)
+            
+        # Cálculo do preço no PIX e Boleto (sem taxa)
         preco_pix = preco_final
-        lucro_pix = preco_pix - custo_total
-
-        # Cálculo do preço no Boleto (sem taxa)
         preco_boleto = preco_final
-        lucro_boleto = preco_boleto - custo_total
-
+        lucro_pix = preco_pix - preco_custo - custo_adicional
+        
         # Cálculo do preço no crédito à vista
-        taxa_credito = TAXAS_INFINITE['credito_vista']
+        taxa_credito = TAXAS_INFINITE['credito']
         preco_credito = preco_final
-        valor_recebido_credito = preco_credito * (1 - taxa_credito/100)
-        lucro_credito = valor_recebido_credito - custo_total
+        lucro_credito = preco_credito * (1 - taxa_credito/100) - preco_custo - custo_adicional
 
         # Calcular preços e lucros para cada opção de parcelamento
         opcoes_parcelamento = {}
@@ -77,8 +70,6 @@ def calcular():
                 continue
                 
             if parcelas == 'credito':
-                preco_credito = preco_final
-                lucro_credito = preco_credito * (1 - taxa/100) - preco_custo - custo_adicional
                 opcoes_parcelamento[parcelas] = {
                     'preco_credito': preco_credito,
                     'lucro_credito': lucro_credito,
@@ -127,11 +118,8 @@ def calcular():
             'custo_adicional': custo_adicional,
             'porcentagem_lucro': porcentagem_lucro,
             'preco_final': preco_final,
-            'lucro_vista': lucro_vista,
-            'preco_pix': preco_pix,
             'lucro_pix': lucro_pix,
             'preco_boleto': preco_boleto,
-            'lucro_boleto': lucro_boleto,
             'preco_credito': preco_credito,
             'lucro_credito': lucro_credito,
             'taxa_credito': taxa_credito,
