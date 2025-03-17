@@ -72,12 +72,12 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Obter valores dos campos
+        // Obter valores dos campos com os IDs corretos
         const precoCusto = parseFloat(precoCustoInput.value.replace('R$', '').replace('.', '').replace(',', '.'));
-        const margemLucro = parseFloat(document.getElementById('margemLucro').value);
-        const descontoPix = parseFloat(document.getElementById('descontoPix').value);
+        const porcentagemLucro = parseFloat(document.getElementById('porcentagemLucro').value);
+        const porcentagemPix = parseFloat(document.getElementById('porcentagemPix').value);
         const custoAdicional = parseFloat(custoAdicionalInput.value.replace('R$', '').replace('.', '').replace(',', '.')) || 0;
-        const numParcelas = parseInt(document.getElementById('numParcelas').value);
+        const maxParcelas = parseInt(document.getElementById('maxParcelas').value);
         const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value);
 
         try {
@@ -89,10 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     preco_custo: precoCusto,
                     custo_adicional: custoAdicional,
-                    margem_lucro: margemLucro,
-                    desconto_pix: descontoPix,
+                    porcentagem_lucro: porcentagemLucro,
+                    porcentagem_pix: porcentagemPix,
                     taxa_parcelamento: taxaParcelamento,
-                    num_parcelas: numParcelas
+                    max_parcelas: maxParcelas
                 })
             });
 
@@ -102,8 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             atualizarResultados(data);
             adicionarAoHistorico(data);
-            resultados.classList.remove('d-none');
-            resultados.scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('.card:has(#precoFinal)').scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
             console.error('Erro:', error);
             alert(error.message || 'Erro ao calcular os preços. Por favor, tente novamente.');
@@ -286,24 +285,24 @@ document.addEventListener('DOMContentLoaded', function() {
         resultadosDesconto.classList.remove('d-none');
         resultadosDesconto.scrollIntoView({ behavior: 'smooth' });
     });
-});
 
-// Função global para recarregar cálculo do histórico
-function recarregarCalculo(index) {
-    const historicoCalculos = JSON.parse(localStorage.getItem('historicoCalculos')) || [];
-    const registro = historicoCalculos[index];
-    
-    if (registro) {
-        document.getElementById('precoCusto').value = formatarMoeda(registro.valores.preco_custo);
-        document.getElementById('custoAdicional').value = formatarMoeda(registro.valores.custo_adicional);
-        document.getElementById('margemLucro').value = registro.valores.margem_lucro;
-        document.getElementById('descontoPix').value = registro.valores.desconto_pix;
-        document.getElementById('numParcelas').value = registro.valores.num_parcelas;
-        document.getElementById('taxaParcelamento').value = registro.valores.taxa_parcelamento;
+    // Atualizar a função recarregarCalculo para usar os IDs corretos
+    window.recarregarCalculo = function(index) {
+        const historicoCalculos = JSON.parse(localStorage.getItem('historicoCalculos')) || [];
+        const registro = historicoCalculos[index];
         
-        document.getElementById('calculadoraForm').dispatchEvent(new Event('submit'));
-    }
-}
+        if (registro) {
+            document.getElementById('precoCusto').value = formatarMoeda(registro.valores.preco_custo);
+            document.getElementById('custoAdicional').value = formatarMoeda(registro.valores.custo_adicional);
+            document.getElementById('porcentagemLucro').value = registro.valores.porcentagem_lucro;
+            document.getElementById('porcentagemPix').value = registro.valores.porcentagem_pix;
+            document.getElementById('maxParcelas').value = registro.valores.max_parcelas;
+            document.getElementById('taxaParcelamento').value = registro.valores.taxa_parcelamento;
+            
+            document.getElementById('calculadoraForm').dispatchEvent(new Event('submit'));
+        }
+    };
+});
 
 function atualizarDetalhesCalculo(precoCusto, custoAdicional, margemLucro, descontoPix, taxaParcelamento, numParcelas) {
     const custoTotal = precoCusto + custoAdicional;
@@ -354,10 +353,10 @@ function atualizarResultados(event) {
     // Obter valores do formulário e converter para números
     const precoCusto = parseFloat(document.getElementById('precoCusto').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
     const custoAdicional = parseFloat(document.getElementById('custoAdicional').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-    const margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
-    const descontoPix = parseFloat(document.getElementById('descontoPix').value) || 0;
+    const margemLucro = parseFloat(document.getElementById('porcentagemLucro').value) || 0;
+    const descontoPix = parseFloat(document.getElementById('porcentagemPix').value) || 0;
     const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value) || 0;
-    const numParcelas = parseInt(document.getElementById('numParcelas').value) || 1;
+    const numParcelas = parseInt(document.getElementById('maxParcelas').value) || 1;
 
     // Validar valores
     if (precoCusto < 0 || margemLucro < 0 || descontoPix < 0 || taxaParcelamento < 0) {
@@ -374,10 +373,10 @@ function atualizarResultados(event) {
         body: JSON.stringify({
             preco_custo: precoCusto,
             custo_adicional: custoAdicional,
-            margem_lucro: margemLucro,
-            desconto_pix: descontoPix,
+            porcentagem_lucro: margemLucro,
+            porcentagem_pix: descontoPix,
             taxa_parcelamento: taxaParcelamento,
-            num_parcelas: numParcelas
+            max_parcelas: numParcelas
         })
     })
     .then(response => response.json())
