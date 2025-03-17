@@ -100,33 +100,47 @@
 
                         <!-- Resultados -->
                         <div id="resultados" class="d-none mt-4">
-                            <div class="card">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Resultados</h5>
+                                </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">
-                                        <i class="bi bi-check-circle"></i>
-                                        Resultados
-                                    </h5>
-                                    
-                                    <!-- Preço à Vista -->
-                                    <div class="result-box mb-3">
-                                        <h6 class="text-primary">Preço à Vista</h6>
-                                        <h3 id="precoFinal" class="mb-2">R$ 0,00</h3>
-                                        <small class="text-muted">Lucro estimado: <span id="lucroVista">R$ 0,00</span></small>
-                                    </div>
-
-                                    <!-- Preço PIX -->
-                                    <div class="result-box mb-3">
-                                        <h6 class="text-success">Preço no PIX</h6>
-                                        <h3 id="precoPix" class="mb-2">R$ 0,00</h3>
-                                        <small class="text-muted">Lucro estimado: <span id="lucroPix">R$ 0,00</span></small>
-                                    </div>
-
-                                    <!-- Preço Parcelado -->
-                                    <div class="result-box">
-                                        <h6 class="text-info">Parcelamento</h6>
-                                        <h3 id="precoParcelado" class="mb-2">R$ 0,00</h3>
-                                        <div id="opcoesParcelamento" class="mt-2">
-                                            <!-- Será preenchido via JavaScript -->
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Preço à Vista</h5>
+                                                    <p class="card-text price-result" id="precoFinal">R$ 0,00</p>
+                                                    <div class="alert alert-info" role="alert">
+                                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                                        Este é o preço base para pagamento em dinheiro ou cartão em 1x. Inclui seu custo + margem de lucro.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Preço no PIX</h5>
+                                                    <p class="card-text price-result" id="precoPix">R$ 0,00</p>
+                                                    <div class="alert alert-info" role="alert">
+                                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                                        Valor com desconto para pagamento via PIX. Recebimento imediato sem taxas.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">Preço Parcelado</h5>
+                                                    <p class="card-text price-result" id="precoParcelado">R$ 0,00</p>
+                                                    <div class="alert alert-info" role="alert">
+                                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                                        Valor ajustado para cobrir as taxas de parcelamento da maquininha/operadora.
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -145,7 +159,47 @@
                                         </button>
                                     </div>
                                     <div id="detalhes-calculo" class="collapse">
-                                        <!-- Será preenchido via JavaScript -->
+                                        <div class="calculation-step mb-4">
+                                            <h6><i class="bi bi-calculator me-2"></i>Cálculo do Preço Final (à Vista)</h6>
+                                            <div class="alert alert-light">
+                                                <p><strong>Como é calculado:</strong></p>
+                                                <ul>
+                                                    <li>Preço de Custo: Valor que você paga pelo produto</li>
+                                                    <li>Custos Adicionais: Frete, embalagem, etc.</li>
+                                                    <li>Margem de Lucro: Sua porcentagem de ganho</li>
+                                                    <li>Preço Final = (Custo + Adicionais) + Margem de Lucro</li>
+                                                </ul>
+                                                <p id="detalhesPrecoFinal" class="mt-2"></p>
+                                            </div>
+                                        </div>
+
+                                        <div class="calculation-step mb-4">
+                                            <h6><i class="bi bi-phone me-2"></i>Cálculo do PIX</h6>
+                                            <div class="alert alert-light">
+                                                <p><strong>Vantagens do PIX:</strong></p>
+                                                <ul>
+                                                    <li>Recebimento instantâneo</li>
+                                                    <li>Sem taxas de operadora</li>
+                                                    <li>Cliente economiza com o desconto</li>
+                                                    <li>Melhor fluxo de caixa para seu negócio</li>
+                                                </ul>
+                                                <p id="detalhesPix" class="mt-2"></p>
+                                            </div>
+                                        </div>
+
+                                        <div class="calculation-step">
+                                            <h6><i class="bi bi-credit-card me-2"></i>Cálculo do Parcelamento</h6>
+                                            <div class="alert alert-light">
+                                                <p><strong>Por que o valor é maior:</strong></p>
+                                                <ul>
+                                                    <li>Taxa da maquininha/operadora por parcela</li>
+                                                    <li>Tempo para receber o valor total</li>
+                                                    <li>Risco de chargeback ou cancelamento</li>
+                                                    <li>Custo do dinheiro no tempo</li>
+                                                </ul>
+                                                <p id="detalhesParcelamento" class="mt-2"></p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

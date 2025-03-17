@@ -238,4 +238,103 @@ function recarregarCalculo(index) {
         
         document.getElementById('calculadoraForm').dispatchEvent(new Event('submit'));
     }
+}
+
+function atualizarDetalhesCalculo(precoCusto, custoAdicional, margemLucro, descontoPix, taxaParcelamento, numParcelas) {
+    const custoTotal = precoCusto + custoAdicional;
+    const margemValor = custoTotal * (margemLucro / 100);
+    const precoFinal = custoTotal + margemValor;
+    const precoPix = precoFinal * (1 - descontoPix / 100);
+    const precoParcelado = precoFinal * (1 + taxaParcelamento / 100);
+
+    // Detalhes do Preço Final
+    document.getElementById('detalhesPrecoFinal').innerHTML = `
+        <strong>Exemplo do cálculo:</strong><br>
+        Custo do Produto: ${formatarMoeda(precoCusto)}<br>
+        Custos Adicionais: ${formatarMoeda(custoAdicional)}<br>
+        Custo Total: ${formatarMoeda(custoTotal)}<br>
+        Margem de Lucro (${margemLucro}%): ${formatarMoeda(margemValor)}<br>
+        <strong>Preço Final: ${formatarMoeda(precoFinal)}</strong>
+    `;
+
+    // Detalhes do PIX
+    const economiaPixReais = precoFinal - precoPix;
+    document.getElementById('detalhesPix').innerHTML = `
+        <strong>Exemplo do desconto:</strong><br>
+        Preço à Vista: ${formatarMoeda(precoFinal)}<br>
+        Desconto PIX: ${descontoPix}%<br>
+        Economia para o cliente: ${formatarMoeda(economiaPixReais)}<br>
+        <strong>Preço no PIX: ${formatarMoeda(precoPix)}</strong>
+    `;
+
+    // Detalhes do Parcelamento
+    const valorParcela = precoParcelado / numParcelas;
+    const acrescimoReais = precoParcelado - precoFinal;
+    document.getElementById('detalhesParcelamento').innerHTML = `
+        <strong>Exemplo do parcelamento:</strong><br>
+        Preço à Vista: ${formatarMoeda(precoFinal)}<br>
+        Taxa de Parcelamento: ${taxaParcelamento}%<br>
+        Acréscimo: ${formatarMoeda(acrescimoReais)}<br>
+        <strong>Preço Parcelado: ${formatarMoeda(precoParcelado)}</strong><br>
+        ${numParcelas}x de ${formatarMoeda(valorParcela)}
+    `;
+
+    // Mostrar a seção de detalhes
+    document.getElementById('detalhes-calculo').style.display = 'block';
+}
+
+function atualizarResultados(event) {
+    event.preventDefault();
+
+    // Obter valores do formulário
+    const precoCusto = parseFloat(document.getElementById('precoCusto').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+    const custoAdicional = parseFloat(document.getElementById('custoAdicional').value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+    const margemLucro = parseFloat(document.getElementById('margemLucro').value) || 0;
+    const descontoPix = parseFloat(document.getElementById('descontoPix').value) || 0;
+    const taxaParcelamento = parseFloat(document.getElementById('taxaParcelamento').value) || 0;
+    const numParcelas = parseInt(document.getElementById('numParcelas').value) || 1;
+
+    // Fazer a requisição para calcular os preços
+    fetch('/calcular', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            preco_custo: precoCusto,
+            custo_adicional: custoAdicional,
+            margem_lucro: margemLucro,
+            desconto_pix: descontoPix,
+            taxa_parcelamento: taxaParcelamento,
+            num_parcelas: numParcelas
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Atualizar os resultados
+        document.getElementById('precoFinal').textContent = formatarMoeda(data.preco_final);
+        document.getElementById('precoPix').textContent = formatarMoeda(data.preco_pix);
+        document.getElementById('precoParcelado').textContent = formatarMoeda(data.preco_parcelado);
+
+        // Mostrar a seção de resultados
+        document.getElementById('resultados').classList.remove('d-none');
+
+        // Atualizar os detalhes do cálculo
+        atualizarDetalhesCalculo(precoCusto, custoAdicional, margemLucro, descontoPix, taxaParcelamento, numParcelas);
+
+        // Salvar no histórico
+        salvarCalculo({
+            precoCusto,
+            custoAdicional,
+            margemLucro,
+            descontoPix,
+            taxaParcelamento,
+            numParcelas,
+            resultados: data
+        });
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao calcular os preços. Por favor, tente novamente.');
+    });
 } 
