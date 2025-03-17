@@ -127,7 +127,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span>${parcelas}x de ${formatarMoeda(info.valor_parcela)}</span>
                         <span>${formatarMoeda(info.valor_total)}</span>
                     </div>
-                    <small class="text-muted">Taxa: ${info.taxa}% - Você recebe: ${formatarMoeda(info.valor_recebido)}</small>
+                    <small class="text-muted">
+                        ${parcelas <= 3 ? 
+                            `Você recebe: ${formatarMoeda(info.valor_recebido)} - Custo do parcelamento: ${formatarMoeda(info.custo_parcelamento)}` :
+                            `Taxa: ${info.taxa}% - Você recebe: ${formatarMoeda(info.valor_recebido)}`
+                        }
+                    </small>
                     <small class="text-${info.lucro >= 0 ? 'success' : 'danger'} d-block">
                         ${info.lucro >= 0 ? 'Lucro' : 'Prejuízo'}: ${formatarMoeda(Math.abs(info.lucro))}
                     </small>

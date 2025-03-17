@@ -70,15 +70,24 @@ def calcular():
         for parcelas, taxa in TAXAS_INFINITE['parcelado'].items():
             valor_total = preco_final
             valor_parcela = valor_total / parcelas
-            valor_recebido = preco_final * (1 - taxa/100)
-            lucro = valor_recebido - custo_total
+            
+            # Se for até 3x, você recebe o valor total e paga a taxa
+            if parcelas <= 3:
+                valor_recebido = valor_total
+                custo_parcelamento = valor_total * (taxa/100)
+                lucro = valor_recebido - custo_total - custo_parcelamento
+            else:
+                # Para mais de 3x, o cliente paga a taxa
+                valor_recebido = valor_total * (1 - taxa/100)
+                lucro = valor_recebido - custo_total
             
             opcoes_parcelamento[parcelas] = {
                 'valor_parcela': valor_parcela,
                 'valor_total': valor_total,
                 'valor_recebido': valor_recebido,
                 'lucro': lucro,
-                'taxa': taxa
+                'taxa': taxa,
+                'custo_parcelamento': valor_total * (taxa/100) if parcelas <= 3 else 0
             }
 
         # Log dos resultados
