@@ -193,21 +193,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${lucroParcelado >= 0 ? 'Lucro' : 'Prejuízo'} no Parcelado: ${formatarMoeda(Math.abs(lucroParcelado))}
                     <small class="text-muted">(${formatarPorcentagem((lucroParcelado/custoTotal) * 100)} sobre o custo)</small>
                 </p>
+                
+                <div class="alert alert-info mt-3">
+                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> Informações sobre o Parcelamento:</h6>
+                    <p class="mb-2">
+                        <strong>Taxa da Maquininha:</strong> ${formatarPorcentagem(data.taxa_parcelamento)}
+                        <br>
+                        <small class="text-muted">Esta é a taxa que a maquininha/operadora cobra por venda parcelada</small>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Custo da Taxa:</strong> ${formatarMoeda(taxaParceladoValor)}
+                        <br>
+                        <small class="text-muted">Este é o valor que você paga para a operadora do cartão</small>
+                    </p>
+                    <p class="mb-0">
+                        <strong>Lucro Real por Parcela:</strong>
+                        <br>
+                        <small class="text-muted">Seu lucro real considerando a taxa do parcelamento:</small>
+                    </p>
+                </div>
+
                 <div class="mt-3">
                     <h6>Opções de Parcelamento:</h6>
                     <div class="row">
-                        ${Array.from({length: data.max_parcelas}, (_, i) => i + 1).map(parcela => `
-                            <div class="col-md-4 mb-2">
-                                <div class="card">
-                                    <div class="card-body p-2">
-                                        <h6 class="mb-1">${parcela}x de ${formatarMoeda(data.preco_parcelado / parcela)}</h6>
-                                        <small class="text-muted">
-                                            Total: ${formatarMoeda(data.preco_parcelado)}
-                                        </small>
+                        ${Array.from({length: data.max_parcelas}, (_, i) => i + 1).map(parcela => {
+                            const valorParcela = data.preco_parcelado / parcela;
+                            const lucroRealPorParcela = (data.preco_parcelado - taxaParceladoValor - custoTotal) / parcela;
+                            return `
+                                <div class="col-md-4 mb-2">
+                                    <div class="card">
+                                        <div class="card-body p-2">
+                                            <h6 class="mb-1">${parcela}x de ${formatarMoeda(valorParcela)}</h6>
+                                            <small class="text-muted d-block">Total: ${formatarMoeda(data.preco_parcelado)}</small>
+                                            <small class="text-${lucroRealPorParcela >= 0 ? 'success' : 'danger'}">
+                                                Lucro por parcela: ${formatarMoeda(lucroRealPorParcela)}
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             </div>
